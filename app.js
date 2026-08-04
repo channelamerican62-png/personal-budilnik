@@ -22,12 +22,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const email = emailInput.value.trim();
             const pwd = pwdInput.value.trim();
             
-            if (!email || !pwd) {
-                alert("Kechirasiz, tizimga kirish uchun Email va Parolni kiritishingiz shart!");
+            if (!email) {
+                alert("Kechirasiz, tizimga kirish uchun avval Email manzilingizni kiriting!");
+                return;
+            }
+            if (!pwd) {
+                alert("Email kiritdingiz! Endi iltimos, uning parolini ham kiriting (Parol xavfsizlik uchun shart).");
                 return;
             }
             if (pwd.length < 4) {
-                alert("Parol juda qisqa! Kamida 4 ta belgi bo'lishi kerak.");
+                alert("Parolingiz juda qisqa! Kamida 4 ta belgi (harf yoki raqam) bo'lishi kerak.");
                 return;
             }
             
