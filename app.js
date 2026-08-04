@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let syncCode = localStorage.getItem('chrono_synccode') || '';
     let tasks = [];
     let disciplineScore = 100;
-    let selectedTheme = localStorage.getItem('chrono_theme') || 'auto';
+
     let currentFilter = 'all';
     let activeWarningTaskId = null;
     let audioCtx = null;
@@ -133,9 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const syncCodeInput = document.getElementById('syncCodeInput');
     const verifySyncCodeBtn = document.getElementById('verifySyncCodeBtn');
 
-    // Theme Elements
-    const themeSelector = document.getElementById('themeSelector');
-    const themeIcon = document.getElementById('themeIcon');
+
 
     // Map Modal Elements
     const mapModalBackdrop = document.getElementById('mapModalBackdrop');
@@ -178,7 +176,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const missedEventBtn = document.getElementById('missedEventBtn');
     const toastContainer = document.getElementById('toastContainer');
 
-    themeSelector.value = selectedTheme;
+
 
     // --- Init Account API Sync ---
     await initServerAccount();
@@ -199,7 +197,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateStatsUI();
     renderTasks();
     renderFocusCard();
-    applyTheme();
 
     // Start 1-second interval ticker & 5-second API polling ticker
     setInterval(tick, 1000);
@@ -295,45 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // --- Theme Switcher Listener ---
-    themeSelector.addEventListener('change', (e) => {
-        selectedTheme = e.target.value;
-        localStorage.setItem('chrono_theme', selectedTheme);
-        applyTheme();
-        showToast(`Mavzu o'zgardi: ${getThemeName(selectedTheme)}`, 'info');
-    });
 
-    function applyTheme() {
-        let activeTheme = selectedTheme;
-
-        if (selectedTheme === 'auto') {
-            const hour = new Date().getHours();
-            if (hour >= 6 && hour < 12) {
-                activeTheme = 'morning';
-            } else if (hour >= 12 && hour < 18) {
-                activeTheme = 'afternoon';
-            } else {
-                activeTheme = 'night';
-            }
-        }
-
-        document.body.setAttribute('data-theme', activeTheme);
-
-        if (activeTheme === 'morning') {
-            themeIcon.className = 'fa-solid fa-sun-plant-wilt';
-        } else if (activeTheme === 'afternoon') {
-            themeIcon.className = 'fa-solid fa-sun';
-        } else {
-            themeIcon.className = 'fa-solid fa-moon';
-        }
-    }
-
-    function getThemeName(mode) {
-        if (mode === 'morning') return '🌅 Ertalabki Mavzu';
-        if (mode === 'afternoon') return '☀️ Kunduzgi Mavzu';
-        if (mode === 'night') return '🌙 Tun (Wood + Oq) Mavzusi';
-        return '🤖 Avto Mavzu';
-    }
 
     // Real-time Location Search Listener
     let mapSearchTimeout = null;
@@ -603,9 +562,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const dateOptions = { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' };
         liveDateEl.textContent = now.toLocaleDateString('uz-UZ', dateOptions);
 
-        if (selectedTheme === 'auto') {
-            applyTheme();
-        }
+
 
         let updated = false;
 
@@ -949,8 +906,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     datasets: [{
                         label: 'Intizom Darajasi (%)',
                         data: data,
-                        borderColor: '#38bdf8',
-                        backgroundColor: 'rgba(56, 189, 248, 0.2)',
+                        borderColor: '#678B6D',
+                        backgroundColor: 'rgba(103, 139, 109, 0.2)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4

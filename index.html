@@ -72,14 +72,7 @@
     </div>
 
     <!-- Main App Screen (Hidden initially) -->
-    <div id="app-screen" style="display: none; background-image: url('app_bg.png'); background-size: cover; background-position: center; background-attachment: fixed; min-height: 100vh;">
-        <!-- Dynamic Ambient Background (Hidden to show image clearly) -->
-        <div class="bg-blobs" style="opacity: 0.3;">
-            <div class="blob blob-1"></div>
-            <div class="blob blob-2"></div>
-            <div class="blob blob-3"></div>
-        </div>
-
+    <div id="app-screen" style="display: none;">
     <div class="app-container">
         <!-- Header Section with Theme Switcher & Telegram Sync -->
         <header class="glass-panel header-panel">
@@ -100,16 +93,7 @@
                     <i class="fa-brands fa-telegram" style="font-size:1.2rem;"></i> Telegram Bot bilan Ulash
                 </button>
 
-                <!-- Theme Mode Selector -->
-                <div class="theme-select-wrap glass-badge">
-                    <i class="fa-solid fa-sun-plant-wilt" id="themeIcon"></i>
-                    <select id="themeSelector" class="theme-select">
-                        <option value="auto">🤖 Avto (Vaqtga ko'ra)</option>
-                        <option value="morning">🌅 Ertalab (Morning)</option>
-                        <option value="afternoon">☀️ Kunduz (Afternoon)</option>
-                        <option value="night">🌙 Tun (Night)</option>
-                    </select>
-                </div>
+
 
                 <div class="live-clock-badge glass-badge">
                     <i class="fa-regular fa-clock"></i>
