@@ -177,6 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             startTicker();
             updateUserNameUI();
             fetchWeather();
+            if (typeof renderCalendar === 'function') renderCalendar();
         }, 500);
     }
 
@@ -237,6 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updateStatsUI();
                 renderTasks();
                 renderFocusCard();
+                if (typeof renderCalendar === 'function') renderCalendar();
                 if (typeof showToast === 'function') {
                     showToast(`Xush kelibsiz, ${name}!`, 'success');
                 }
