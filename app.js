@@ -89,11 +89,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let tasks = [];
     let disciplineScore = parseInt(localStorage.getItem('chrono_score')) || 100;
 
-    // Bypass login if already logged in
-    if (localStorage.getItem('chrono_userid')) {
-        loginScreen.style.display = 'none';
-        appScreen.style.display = 'block';
-    }
 
     let currentFilter = 'all';
     let activeWarningTaskId = null;
