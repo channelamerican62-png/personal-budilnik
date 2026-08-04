@@ -13,6 +13,8 @@
     <!-- Leaflet.js Interactive Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="login.css">
 </head>
@@ -161,6 +163,16 @@
             </div>
         </section>
 
+        <!-- Discipline Chart Section -->
+        <section class="glass-card chart-section" style="margin-bottom: 24px; padding: 20px;">
+            <div class="card-header" style="margin-bottom: 10px;">
+                <h3><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Haftalik Intizom Dinamikasi</h3>
+            </div>
+            <div style="position: relative; height: 200px; width: 100%;">
+                <canvas id="disciplineChart"></canvas>
+            </div>
+        </section>
+
         <!-- Main Layout: Form + Active Event Focus + Timeline -->
         <main class="main-grid">
             <!-- Left Column: Add Task Form with Live Map Integration -->
@@ -223,6 +235,22 @@
                         <i class="fa-solid fa-bolt"></i> Rejani Saqlash va Sinxronlash
                     </button>
                 </form>
+            </section>
+
+            <!-- Pomodoro Timer -->
+            <section class="glass-card pomodoro-card" style="margin-top: 24px;">
+                <div class="card-header" style="text-align: center;">
+                    <h3><i class="fa-solid fa-stopwatch" style="color:var(--primary);"></i> Pomodoro Taymeri</h3>
+                    <p>Chuqur diqqat bilan ishlash uchun</p>
+                </div>
+                <div style="text-align: center; margin: 16px 0;">
+                    <h1 id="pomodoroDisplay" style="font-size: 3.5rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text-main);">25:00</h1>
+                    <p id="pomodoroStatus" style="color: var(--primary); font-weight: 600;">Fokus vaqti</p>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn btn-primary" id="pomodoroStartBtn"><i class="fa-solid fa-play"></i> Boshlash</button>
+                    <button class="btn btn-secondary" id="pomodoroResetBtn"><i class="fa-solid fa-rotate-right"></i> Qayta</button>
+                </div>
             </section>
 
             <!-- Right Column: Live Focus Card & Today's Schedule Timeline -->

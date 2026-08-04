@@ -516,11 +516,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         formMap.fitBounds(bounds, { padding: [30, 30] });
 
         const distKm = calculateDistance(userCoords[0], userCoords[1], dest.lat, dest.lng).toFixed(1);
-        const travelMins = Math.ceil(distKm * 2.5);
+        
+        // Traffic Simulation (+ 5 to 15 mins)
+        const trafficFactor = Math.floor(Math.random() * 11) + 5; 
+        const baseMins = Math.ceil(distKm * 2.5);
+        const travelMins = baseMins + trafficFactor;
+
+        // Fetch Weather
+        let weatherStr = "";
+        try {
+            const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${dest.lat}&longitude=${dest.lng}&current_weather=true`);
+            const wData = await wResp.json();
+            if (wData && wData.current_weather) {
+                weatherStr = ` | 🌡️ ${wData.current_weather.temperature}°C`;
+            }
+        } catch(e){}
 
         routeInfoText.innerHTML = `
             <span><i class="fa-solid fa-location-crosshairs" style="color:var(--primary);"></i> Siz ➔ <strong style="color:var(--text-main);">${dest.name}</strong></span>
-            <span style="color:var(--primary); font-weight:700;">${distKm} km (~${travelMins} min yo'l)</span>
+            <span style="color:var(--primary); font-weight:700;">${distKm} km (~${travelMins} min, tirbandlik bilan) ${weatherStr}</span>
         `;
     }
 
@@ -913,6 +927,47 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const lateCount = tasks.filter(t => t.status === 'late' || t.status === 'missed').length;
         lateTasksCountEl.textContent = lateCount;
+        updateDisciplineChart();
+    }
+
+    let disciplineChartInstance = null;
+    function updateDisciplineChart() {
+        const ctx = document.getElementById('disciplineChart');
+        if (!ctx) return;
+        
+        const labels = ['Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan', 'Bugun'];
+        const data = [100, 95, 90, 85, 92, 98, disciplineScore];
+        
+        if (disciplineChartInstance) {
+            disciplineChartInstance.data.datasets[0].data[6] = disciplineScore;
+            disciplineChartInstance.update();
+        } else {
+            disciplineChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Intizom Darajasi (%)',
+                        data: data,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.2)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: 0, max: 100 }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
     }
 
     function getStatusBadge(status) {
@@ -941,6 +996,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     function saveTasksLocal() {
         localStorage.setItem('chrono_tasks', JSON.stringify(tasks));
         localStorage.setItem('chrono_score', disciplineScore);
+    }
+
+    // --- Pomodoro Logic ---
+    let pomodoroInterval;
+    let pomodoroTime = 25 * 60;
+    let isPomodoroRunning = false;
+    
+    const pomodoroDisplay = document.getElementById('pomodoroDisplay');
+    const pomodoroStartBtn = document.getElementById('pomodoroStartBtn');
+    const pomodoroResetBtn = document.getElementById('pomodoroResetBtn');
+    const pomodoroStatus = document.getElementById('pomodoroStatus');
+    
+    function updatePomodoroDisplay() {
+        if (!pomodoroDisplay) return;
+        const m = String(Math.floor(pomodoroTime / 60)).padStart(2, '0');
+        const s = String(pomodoroTime % 60).padStart(2, '0');
+        pomodoroDisplay.textContent = `${m}:${s}`;
+    }
+    
+    if (pomodoroStartBtn) {
+        pomodoroStartBtn.addEventListener('click', () => {
+            if (isPomodoroRunning) {
+                clearInterval(pomodoroInterval);
+                pomodoroStartBtn.innerHTML = '<i class="fa-solid fa-play"></i> Boshlash';
+            } else {
+                pomodoroInterval = setInterval(() => {
+                    pomodoroTime--;
+                    updatePomodoroDisplay();
+                    if (pomodoroTime <= 0) {
+                        clearInterval(pomodoroInterval);
+                        isPomodoroRunning = false;
+                        playBeepAlert();
+                        showToast("Pomodoro yakunlandi! Dam oling.", 'success');
+                        pomodoroStartBtn.innerHTML = '<i class="fa-solid fa-play"></i> Boshlash';
+                        pomodoroTime = 5 * 60; 
+                        if (pomodoroStatus) pomodoroStatus.textContent = "Dam olish vaqti";
+                        updatePomodoroDisplay();
+                    }
+                }, 1000);
+                pomodoroStartBtn.innerHTML = '<i class="fa-solid fa-pause"></i> To\'xtatish';
+            }
+            isPomodoroRunning = !isPomodoroRunning;
+        });
+    }
+    
+    if (pomodoroResetBtn) {
+        pomodoroResetBtn.addEventListener('click', () => {
+            clearInterval(pomodoroInterval);
+            isPomodoroRunning = false;
+            pomodoroTime = 25 * 60;
+            if (pomodoroStatus) pomodoroStatus.textContent = "Fokus vaqti";
+            if (pomodoroStartBtn) pomodoroStartBtn.innerHTML = '<i class="fa-solid fa-play"></i> Boshlash';
+            updatePomodoroDisplay();
+        });
     }
 
     function showToast(message, type = 'info') {
