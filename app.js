@@ -12,6 +12,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginScreen = document.getElementById('login-screen');
     const appScreen = document.getElementById('app-screen');
     
+    // Ticker state
+    let tickerStarted = false;
+
+    function startTicker() {
+        if (tickerStarted) return; // prevent double-start
+        tickerStarted = true;
+        tick();
+        setInterval(tick, 1000);
+        setInterval(fetchTasksFromAPI, 4000);
+    }
+
     function handleLogin(e) {
         if (e) e.preventDefault();
         
@@ -27,29 +38,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
             if (!pwd) {
-                alert("Email kiritdingiz! Endi iltimos, uning parolini ham kiriting (Parol xavfsizlik uchun shart).");
+                alert("Iltimos, parolingizni ham kiriting!");
                 return;
             }
             if (pwd.length < 4) {
-                alert("Parolingiz juda qisqa! Kamida 4 ta belgi (harf yoki raqam) bo'lishi kerak.");
+                alert("Parolingiz juda qisqa! Kamida 4 ta belgi bo'lishi kerak.");
                 return;
             }
             
-            // Generate basic username from email
+            // Generate username from email
             const newUserName = email.split('@')[0];
             userName = newUserName;
             localStorage.setItem('chrono_username', userName);
-            
-            const userNameDisplay = document.getElementById('userNameDisplay');
-            if (userNameDisplay) userNameDisplay.textContent = userName;
         }
 
-        // Mock successful login transition
+        // Transition to app screen
         loginScreen.style.animation = "fadeOut 0.5s forwards";
         setTimeout(() => {
             loginScreen.style.display = 'none';
             appScreen.style.display = 'block';
             appScreen.style.animation = "fadeIn 0.5s forwards";
+            // Start ticker ONLY after login screen is gone
+            startTicker();
+            updateUserNameUI();
         }, 500);
     }
 
@@ -58,27 +69,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- GOOGLE IDENTITY SERVICES ---
     window.handleCredentialResponse = function(response) {
-        const responsePayload = decodeJwtResponse(response.credential);
-        const googleId = responsePayload.sub;
-        const name = responsePayload.name;
-        
-        localStorage.setItem('chrono_userid', googleId);
-        localStorage.setItem('chrono_username', name);
-        
-        userId = googleId;
-        userName = name;
-        
-        handleLogin();
-        
-        initServerAccount().then(() => {
-            updateUserNameUI();
-            updateStatsUI();
-            renderTasks();
-            renderFocusCard();
-            if (typeof showToast === 'function') {
-                showToast(`Xush kelibsiz, ${name}!`, 'success');
-            }
-        });
+        try {
+            const responsePayload = decodeJwtResponse(response.credential);
+            const googleId = responsePayload.sub;
+            const name = responsePayload.name;
+            
+            localStorage.setItem('chrono_userid', googleId);
+            localStorage.setItem('chrono_username', name);
+            
+            userId = googleId;
+            userName = name;
+            
+            handleLogin();
+            
+            initServerAccount().then(() => {
+                updateUserNameUI();
+                updateStatsUI();
+                renderTasks();
+                renderFocusCard();
+                if (typeof showToast === 'function') {
+                    showToast(`Xush kelibsiz, ${name}!`, 'success');
+                }
+            });
+        } catch(err) {
+            console.error('Google login error:', err);
+        }
     };
 
     function decodeJwtResponse(token) {
@@ -224,10 +239,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderTasks();
     renderFocusCard();
 
-    // Start 1-second interval ticker IMMEDIATELY
-    setInterval(tick, 1000);
-    setInterval(fetchTasksFromAPI, 4000);
-    tick();
+    // NOTE: tick() and setInterval are started INSIDE handleLogin()
+    // This ensures the clock only runs after the user has logged in.
+    // app.js version: 5
 
     // --- Init Account API Sync (Non-blocking) ---
     initServerAccount();

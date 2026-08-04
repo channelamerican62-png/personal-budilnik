@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronoGuard | Aqlli Budilnik & Telegram Bot Sinxronizatsiyasi</title>
+    <title>ChronoGuard | Aqlli Budilnik &amp; Telegram Bot Sinxronizatsiyasi</title>
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,10 +13,10 @@
     <!-- Leaflet.js Interactive Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Chart.js -->
+    <!-- Chart.js (only once) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="styles.css?v=2">
-    <link rel="stylesheet" href="login.css?v=2">
+    <link rel="stylesheet" href="styles.css?v=5">
+    <link rel="stylesheet" href="login.css?v=5">
 </head>
 <body data-theme="afternoon">
 
@@ -82,7 +82,7 @@
                 </div>
                 <div>
                     <h1 class="brand-title">Chrono<span class="highlight">Guard</span></h1>
-                    <p class="brand-subtitle">Aqlli Budilnik & Telegram Real-Time Sinxronlash</p>
+                    <p class="brand-subtitle">Aqlli Budilnik &amp; Telegram Real-Time Sinxronlash</p>
                 </div>
             </div>
 
@@ -93,12 +93,10 @@
                     <i class="fa-brands fa-telegram" style="font-size:1.2rem;"></i> Telegram Bot bilan Ulash
                 </button>
 
-
-
                 <div class="live-clock-badge glass-badge">
                     <i class="fa-regular fa-clock"></i>
                     <span id="liveTime">00:00:00</span>
-                    <span id="liveDate" class="live-date">2026-08-04</span>
+                    <span id="liveDate" class="live-date">---</span>
                 </div>
 
                 <div class="user-profile-badge glass-badge" id="profileBadge">
@@ -244,7 +242,7 @@
             <section class="right-column">
                 <!-- Active Focus Card -->
                 <div class="glass-card active-focus-card" id="activeFocusCard">
-                    <div class="focus-badge"><i class="fa-solid fa-bullseye"></i> NAVBATDAGI ASOSIY REJA & MARSHRUT</div>
+                    <div class="focus-badge"><i class="fa-solid fa-bullseye"></i> NAVBATDAGI ASOSIY REJA &amp; MARSHRUT</div>
                     <div id="focusContent">
                         <p class="empty-focus-msg"><i class="fa-solid fa-calendar-day"></i> Hozircha rejalaringiz yo'q. Chap tomondan yangi reja qo'shing!</p>
                     </div>
@@ -271,6 +269,7 @@
                 </div>
             </section>
         </main>
+    </div>
     </div>
 
     <!-- Telegram Bot Sync Modal -->
@@ -334,7 +333,7 @@
         </div>
     </div>
 
-    <!-- Edit User Name Modal -->
+    <!-- Edit User Name Modal (only once!) -->
     <div class="modal-backdrop" id="nameModalBackdrop">
         <div class="glass-card modal-box">
             <h3><i class="fa-solid fa-user-edit"></i> Foydalanuvchi Ismini O'zgartirish</h3>
@@ -388,31 +387,12 @@
             </div>
         </div>
     </div>
-        </div>
-    </div>
-    </div>
-
-    <!-- Name Edit Modal -->
-    <div class="modal-backdrop" id="nameModalBackdrop">
-        <div class="modal-content glass-card">
-            <h2>Ismni o'zgartirish</h2>
-            <div class="form-group" style="margin: 20px 0;">
-                <input type="text" id="nameInputModal" placeholder="Yangi ism kiring..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);">
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="btn btn-secondary" id="closeNameModal">Bekor qilish</button>
-                <button class="btn btn-primary" id="saveNameBtn">Saqlash</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Custom Notification Toast -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Google Identity Services (Tayyorgarlik uchun) -->
+    <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- Chart.js for Discipline Chart -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>
