@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chronoguard-v1';
+const CACHE_NAME = 'chronoguard-v2';
 const ASSETS = [
     '/',
     '/index.html',
@@ -10,47 +10,38 @@ const ASSETS = [
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
-// Install - cache core assets
+// Install - skip waiting to activate immediately
 self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(ASSETS).catch(() => {});
-        })
-    );
     self.skipWaiting();
 });
 
-// Activate - clean old caches
+// Activate - purge ALL old caches
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(keys => {
             return Promise.all(
-                keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+                keys.map(k => caches.delete(k))
             );
         })
     );
     self.clients.claim();
 });
 
-// Fetch - serve from cache, fallback to network
+// Fetch - NETWORK FIRST strategy to guarantee fresh updates
 self.addEventListener('fetch', event => {
-    // Skip non-GET and cross-origin API requests
     if (event.request.method !== 'GET') return;
     if (event.request.url.includes('chronoguard-backend.onrender.com')) return;
     if (event.request.url.includes('open-meteo.com')) return;
     if (event.request.url.includes('nominatim.openstreetmap.org')) return;
 
     event.respondWith(
-        caches.match(event.request).then(cached => {
-            if (cached) return cached;
-            return fetch(event.request).then(response => {
-                if (response && response.status === 200 && response.type === 'basic') {
-                    const cloned = response.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, cloned));
-                }
-                return response;
-            }).catch(() => caches.match('/index.html'));
-        })
+        fetch(event.request).then(response => {
+            if (response && response.status === 200 && response.type === 'basic') {
+                const cloned = response.clone();
+                caches.open(CACHE_NAME).then(cache => cache.put(event.request, cloned));
+            }
+            return response;
+        }).catch(() => caches.match(event.request))
     );
 });
 
@@ -60,8 +51,7 @@ self.addEventListener('push', event => {
     const title = data.title || 'ChronoGuard Eslatma';
     const options = {
         body: data.body || 'Sizda yangi eslatma bor!',
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
+        icon: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/hourglass-half.svg',
         vibrate: [200, 100, 200],
         data: { url: data.url || '/' }
     };

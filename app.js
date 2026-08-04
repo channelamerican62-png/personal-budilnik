@@ -390,6 +390,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateStatsUI();
     renderTasks();
     renderFocusCard();
+    if (typeof renderCalendar === 'function') renderCalendar();
 
     // NOTE: tick() and setInterval are started INSIDE doLoginTransition()
     // This ensures the clock only runs after the user has logged in.
@@ -1369,6 +1370,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const lateCount = tasks.filter(t => t.status === 'late' || t.status === 'missed').length;
         lateTasksCountEl.textContent = lateCount;
         updateDisciplineChart();
+        if (typeof renderCalendar === 'function') renderCalendar();
     }
 
     function updateDisciplineChart() {
