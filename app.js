@@ -403,10 +403,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const UZ_MONTHS = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktyabr','Noyabr','Dekabr'];
 
     function getTaskDotColors(dateStr) {
-        // Returns array of colors for dots on a given date (YYYY-MM-DD)
+        // BUG #2 FIX: Use local date string (not UTC) for comparison
+        // dateStr format: 'YYYY-MM-DD' in local timezone
         const dayTasks = tasks.filter(t => {
             if (!t.createdAt) return false;
-            return t.createdAt.startsWith(dateStr);
+            // Convert ISO string to local date string for correct timezone comparison
+            const taskLocalDate = new Date(t.createdAt);
+            const localStr = `${taskLocalDate.getFullYear()}-${String(taskLocalDate.getMonth()+1).padStart(2,'0')}-${String(taskLocalDate.getDate()).padStart(2,'0')}`;
+            return localStr === dateStr;
         });
         if (dayTasks.length === 0) return [];
         const colors = [];
@@ -463,14 +467,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             cell.addEventListener('click', () => {
                 if (calSelectedDate === dateStr) {
+                    // BUG #4 FIX: Deselect and show all tasks
                     calSelectedDate = null;
-                    // Show all tasks
                     currentFilter = 'all';
+                    // Reset filter button UI
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    const allBtn = document.querySelector('.filter-btn[data-filter="all"]');
+                    if (allBtn) allBtn.classList.add('active');
                 } else {
                     calSelectedDate = dateStr;
-                    // Could filter tasks by date in future
                 }
                 renderCalendar();
+                // BUG #4 FIX: Actually re-render tasks filtered by selected date
+                renderTasksByDate(calSelectedDate);
             });
 
             grid.appendChild(cell);
@@ -551,13 +560,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Telegram Sync Modal Event Listeners ---
-    telegramSyncBtn.addEventListener('click', () => {
-        syncCodeDisplay.textContent = syncCode || '782-910';
-        syncModalBackdrop.classList.add('active');
+    // BUG #3 FIX: use optional chaining to prevent crash if element is null
+    telegramSyncBtn?.addEventListener('click', () => {
+        if (syncCodeDisplay) syncCodeDisplay.textContent = syncCode || '782-910';
+        syncModalBackdrop?.classList.add('active');
     });
 
-    closeSyncModal.addEventListener('click', () => {
-        syncModalBackdrop.classList.remove('active');
+    closeSyncModal?.addEventListener('click', () => {
+        syncModalBackdrop?.classList.remove('active');
     });
 
     verifySyncCodeBtn.addEventListener('click', async () => {
@@ -647,6 +657,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             localStorage.removeItem('chrono_synccode');
             localStorage.removeItem('chrono_tasks');
             localStorage.removeItem('chrono_score');
+            localStorage.removeItem('chrono_saved_accounts'); // BUG #1 FIX: clear saved accounts on logout
             location.reload();
         }
     });
@@ -1017,6 +1028,78 @@ document.addEventListener('DOMContentLoaded', async () => {
     function deductScore(pts) {
         disciplineScore = Math.max(0, disciplineScore - pts);
         localStorage.setItem('chrono_score', disciplineScore);
+    }
+
+    // BUG #4 FIX: Filter tasks by calendar selected date
+    function renderTasksByDate(dateStr) {
+        tasksListEl.innerHTML = '';
+
+        let filteredTasks;
+        if (!dateStr) {
+            // No date selected: show all based on currentFilter
+            renderTasks();
+            return;
+        }
+
+        // Filter tasks by the selected calendar date (local timezone)
+        filteredTasks = tasks.filter(t => {
+            if (!t.createdAt) return false;
+            const d = new Date(t.createdAt);
+            const localStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            return localStr === dateStr;
+        });
+
+        if (filteredTasks.length === 0) {
+            tasksListEl.innerHTML = `
+                <div style="text-align:center; padding: 30px; color: var(--text-muted);">
+                    <i class="fa-solid fa-calendar-xmark" style="font-size:2rem; margin-bottom:10px;"></i>
+                    <p>${dateStr} kuni uchun hech qanday reja yo'q.</p>
+                </div>
+            `;
+            return;
+        }
+
+        filteredTasks.sort((a, b) => a.time.localeCompare(b.time));
+        filteredTasks.forEach(task => {
+            const card = document.createElement('div');
+            card.className = `task-item-card state-${task.status}`;
+            card.innerHTML = `
+                <div class="task-left">
+                    <div class="task-time-pill">
+                        <div class="time-val">${task.time}</div>
+                        <div class="buffer-val">-${task.bufferTime} min</div>
+                    </div>
+                    <div class="task-main-info">
+                        <h4>${escapeHtml(task.title)}</h4>
+                        <div class="task-location-text">
+                            <i class="fa-solid fa-location-dot" style="color:var(--primary);"></i>
+                            ${escapeHtml(task.location)}
+                        </div>
+                    </div>
+                </div>
+                <div class="task-actions">
+                    ${getStatusBadge(task.status)}
+                    <button class="btn-icon btn-view-route" data-id="${task.id}">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                    </button>
+                    ${task.status !== 'completed' ? `
+                        <button class="btn-arrive" data-id="${task.id}">
+                            <i class="fa-solid fa-check"></i> Yetib bordim
+                        </button>
+                    ` : ''}
+                    <button class="btn-icon btn-delete" data-id="${task.id}">
+                        <i class="fa-solid fa-trash-can" style="color:#ef4444;"></i>
+                    </button>
+                </div>
+            `;
+            const routeBtn = card.querySelector('.btn-view-route');
+            if (routeBtn) routeBtn.addEventListener('click', () => openRouteModal(task));
+            const arriveBtn = card.querySelector('.btn-arrive');
+            if (arriveBtn) arriveBtn.addEventListener('click', () => completeTask(task.id));
+            const deleteBtn = card.querySelector('.btn-delete');
+            if (deleteBtn) deleteBtn.addEventListener('click', () => deleteTask(task.id));
+            tasksListEl.appendChild(card);
+        });
     }
 
     function renderTasks() {
