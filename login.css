@@ -246,3 +246,161 @@
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* === Saved Accounts Picker === */
+.saved-accounts-section {
+    margin-bottom: 24px;
+}
+
+.saved-accounts-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+}
+
+.saved-accounts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.saved-account-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fafafa;
+    position: relative;
+}
+
+.saved-account-card:hover {
+    border-color: #1a1a1a;
+    background: #f0f0f0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.account-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a1a1a, #555);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.account-info {
+    flex: 1;
+    text-align: left;
+}
+
+.account-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+    display: block;
+}
+
+.account-email {
+    font-size: 0.8rem;
+    color: #888;
+    display: block;
+    margin-top: 2px;
+}
+
+.account-remove-btn {
+    background: none;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.account-remove-btn:hover {
+    color: #ef4444;
+    background: rgba(239,68,68,0.1);
+}
+
+.add-new-account-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border: 1.5px dashed #ccc;
+    border-radius: 12px;
+    background: transparent;
+    color: #888;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.add-new-account-btn:hover {
+    border-color: #1a1a1a;
+    color: #1a1a1a;
+}
+
+.login-form-slide {
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+.login-form-slide.hidden {
+    max-height: 0;
+    opacity: 0;
+}
+
+.login-form-slide.visible {
+    max-height: 600px;
+    opacity: 1;
+}
+
+/* === Weather Widget in Header === */
+.weather-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main, #fff);
+    cursor: default;
+}
+
+.weather-temp {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fbbf24;
+}
+
+.weather-city {
+    font-size: 0.75rem;
+    color: var(--text-muted, rgba(255,255,255,0.6));
+    display: block;
+    line-height: 1;
+}
+
+.weather-icon {
+    font-size: 1.3rem;
+}

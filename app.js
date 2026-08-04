@@ -12,15 +12,107 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginScreen = document.getElementById('login-screen');
     const appScreen = document.getElementById('app-screen');
     
+    // --- SAVED ACCOUNTS LOGIC ---
+    function getSavedAccounts() {
+        try { return JSON.parse(localStorage.getItem('chrono_saved_accounts')) || []; }
+        catch(e) { return []; }
+    }
+    function saveAccount(email, name) {
+        const accounts = getSavedAccounts();
+        const existing = accounts.findIndex(a => a.email === email);
+        const entry = { email, name: name || email.split('@')[0], lastLogin: Date.now() };
+        if (existing >= 0) accounts[existing] = entry;
+        else accounts.unshift(entry);
+        // Keep only last 5 accounts
+        localStorage.setItem('chrono_saved_accounts', JSON.stringify(accounts.slice(0, 5)));
+    }
+    function removeAccount(email) {
+        const accounts = getSavedAccounts().filter(a => a.email !== email);
+        localStorage.setItem('chrono_saved_accounts', JSON.stringify(accounts));
+        renderSavedAccounts();
+    }
+    function renderSavedAccounts() {
+        const accounts = getSavedAccounts();
+        const section = document.getElementById('savedAccountsSection');
+        const list = document.getElementById('savedAccountsList');
+        const formSlide = document.getElementById('loginFormSlide');
+        if (!section || !list || !formSlide) return;
+
+        if (accounts.length === 0) {
+            section.style.display = 'none';
+            formSlide.classList.remove('hidden');
+            formSlide.classList.add('visible');
+            return;
+        }
+
+        section.style.display = 'block';
+        formSlide.classList.add('hidden');
+        formSlide.classList.remove('visible');
+
+        list.innerHTML = accounts.map(acc => {
+            const initials = (acc.name || acc.email).slice(0, 2).toUpperCase();
+            const timeAgo = acc.lastLogin ? new Date(acc.lastLogin).toLocaleDateString('uz-UZ') : '';
+            return `
+            <div class="saved-account-card" onclick="window._loginWithSaved('${acc.email}', '${acc.name}')">  
+                <div class="account-avatar">${initials}</div>
+                <div class="account-info">
+                    <span class="account-name">${acc.name}</span>
+                    <span class="account-email">${acc.email} · ${timeAgo}</span>
+                </div>
+                <button class="account-remove-btn" title="Akkauntni ro'yxatdan o'chirish" 
+                    onclick="event.stopPropagation(); window._removeAccount('${acc.email}')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>`;
+        }).join('');
+    }
+
+    // Expose helpers to window for inline onclick
+    window._loginWithSaved = function(email, name) {
+        userName = name;
+        localStorage.setItem('chrono_username', name);
+        saveAccount(email, name);
+        doLoginTransition();
+    };
+    window._removeAccount = function(email) {
+        removeAccount(email);
+    };
+
+    const addNewAccountBtn = document.getElementById('addNewAccountBtn');
+    if (addNewAccountBtn) {
+        addNewAccountBtn.addEventListener('click', () => {
+            const formSlide = document.getElementById('loginFormSlide');
+            if (formSlide) {
+                formSlide.classList.remove('hidden');
+                formSlide.classList.add('visible');
+            }
+        });
+    }
+
+    // Render saved accounts on page load
+    renderSavedAccounts();
+
     // Ticker state
     let tickerStarted = false;
 
     function startTicker() {
-        if (tickerStarted) return; // prevent double-start
+        if (tickerStarted) return;
         tickerStarted = true;
         tick();
         setInterval(tick, 1000);
         setInterval(fetchTasksFromAPI, 4000);
+    }
+
+    function doLoginTransition() {
+        loginScreen.style.animation = "fadeOut 0.5s forwards";
+        setTimeout(() => {
+            loginScreen.style.display = 'none';
+            appScreen.style.display = 'block';
+            appScreen.style.animation = "fadeIn 0.5s forwards";
+            startTicker();
+            updateUserNameUI();
+            fetchWeather();
+        }, 500);
     }
 
     function handleLogin(e) {
@@ -46,22 +138,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
             
-            // Generate username from email
             const newUserName = email.split('@')[0];
             userName = newUserName;
             localStorage.setItem('chrono_username', userName);
+            saveAccount(email, newUserName);
         }
 
-        // Transition to app screen
-        loginScreen.style.animation = "fadeOut 0.5s forwards";
-        setTimeout(() => {
-            loginScreen.style.display = 'none';
-            appScreen.style.display = 'block';
-            appScreen.style.animation = "fadeIn 0.5s forwards";
-            // Start ticker ONLY after login screen is gone
-            startTicker();
-            updateUserNameUI();
-        }, 500);
+        doLoginTransition();
     }
 
     const mockSignInBtn = document.getElementById('mockSignInBtn');
@@ -73,14 +156,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const responsePayload = decodeJwtResponse(response.credential);
             const googleId = responsePayload.sub;
             const name = responsePayload.name;
+            const email = responsePayload.email || (googleId + '@google.com');
             
             localStorage.setItem('chrono_userid', googleId);
             localStorage.setItem('chrono_username', name);
             
             userId = googleId;
             userName = name;
+            saveAccount(email, name);
             
-            handleLogin();
+            doLoginTransition();
             
             initServerAccount().then(() => {
                 updateUserNameUI();
@@ -239,14 +324,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderTasks();
     renderFocusCard();
 
-    // NOTE: tick() and setInterval are started INSIDE handleLogin()
+    // NOTE: tick() and setInterval are started INSIDE doLoginTransition()
     // This ensures the clock only runs after the user has logged in.
-    // app.js version: 5
+    // app.js version: 6
 
     // --- Init Account API Sync (Non-blocking) ---
     initServerAccount();
 
-    // --- Geolocation Init ---
+    // --- Geolocation Init (get coords for map immediately) ---
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             (pos) => {
@@ -255,6 +340,59 @@ document.addEventListener('DOMContentLoaded', async () => {
             },
             () => console.log("User GPS fallback")
         );
+    }
+
+    // --- Weather Fetch (runs after login) ---
+    async function fetchWeather() {
+        const weatherBadge = document.getElementById('weatherBadge');
+        const weatherIcon = document.getElementById('weatherIcon');
+        const weatherTemp = document.getElementById('weatherTemp');
+        const weatherCity = document.getElementById('weatherCity');
+        if (!weatherBadge) return;
+
+        const weatherCodes = {
+            0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+            45: '🌫️', 48: '🌫️',
+            51: '🌦️', 53: '🌦️', 55: '🌧️',
+            61: '🌧️', 63: '🌧️', 65: '🌧️',
+            71: '❄️', 73: '❄️', 75: '❄️',
+            80: '🌦️', 81: '🌦️', 82: '⛈️',
+            95: '⛈️', 96: '⛈️', 99: '⛈️'
+        };
+
+        function showWeather(lat, lon) {
+            Promise.all([
+                fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`).then(r => r.json()),
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`).then(r => r.json())
+            ]).then(([wData, geoData]) => {
+                if (wData && wData.current_weather) {
+                    const temp = Math.round(wData.current_weather.temperature);
+                    const code = wData.current_weather.weathercode;
+                    const icon = weatherCodes[code] || '🌡️';
+                    const city = geoData?.address?.city || geoData?.address?.town || geoData?.address?.village || geoData?.address?.county || 'Joylashuv';
+
+                    if (weatherIcon) weatherIcon.textContent = icon;
+                    if (weatherTemp) weatherTemp.textContent = `${temp}°C`;
+                    if (weatherCity) weatherCity.textContent = city;
+                    if (weatherBadge) weatherBadge.style.display = 'flex';
+
+                    // Update userCoords for map usage
+                    userCoords = [lat, lon];
+                }
+            }).catch(err => console.log('Weather fetch error:', err));
+        }
+
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => showWeather(pos.coords.latitude, pos.coords.longitude),
+                () => {
+                    // Fallback: Toshkent coordinates
+                    showWeather(41.2995, 69.2401);
+                }
+            );
+        } else {
+            showWeather(41.2995, 69.2401);
+        }
     }
 
     // --- API Sync Functions ---

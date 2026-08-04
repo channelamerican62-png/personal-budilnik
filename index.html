@@ -15,8 +15,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Chart.js (only once) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="styles.css?v=5">
-    <link rel="stylesheet" href="login.css?v=5">
+    <link rel="stylesheet" href="styles.css?v=6">
+    <link rel="stylesheet" href="login.css?v=6">
 </head>
 <body data-theme="afternoon">
 
@@ -35,6 +35,17 @@
             <div class="login-form-container">
                 <h2>Welcome<br>Back</h2>
                 
+                <!-- Saved Accounts Picker (shown if there are saved accounts) -->
+                <div class="saved-accounts-section" id="savedAccountsSection" style="display:none;">
+                    <p class="saved-accounts-label">Saqlangan Akkauntlar</p>
+                    <div class="saved-accounts-list" id="savedAccountsList"></div>
+                    <button class="add-new-account-btn" id="addNewAccountBtn">
+                        <i class="fa-solid fa-plus"></i> Yangi akkavnt bilan kirish
+                    </button>
+                </div>
+
+                <!-- Login Form (shown when no saved accounts or clicking 'add new') -->
+                <div class="login-form-slide" id="loginFormSlide">
                 <form id="authForm" onsubmit="event.preventDefault(); document.getElementById('mockSignInBtn').click();">
                     <div class="input-group">
                         <label>Email</label>
@@ -64,6 +75,7 @@
                 <div class="divider"><span>Or</span></div>
                 
                 <div id="googleBtnContainer" style="display:flex; justify-content:center; margin-top: 15px;"></div>
+                </div>
             </div>
             
             <!-- Bottom Right Decor -->
@@ -97,6 +109,15 @@
                     <i class="fa-regular fa-clock"></i>
                     <span id="liveTime">00:00:00</span>
                     <span id="liveDate" class="live-date">---</span>
+                </div>
+
+                <!-- Weather Widget -->
+                <div class="weather-badge glass-badge" id="weatherBadge" style="display:none;">
+                    <span class="weather-icon" id="weatherIcon">🌤️</span>
+                    <div>
+                        <span class="weather-temp" id="weatherTemp">--°C</span>
+                        <span class="weather-city" id="weatherCity">Aniqlanmoqda...</span>
+                    </div>
                 </div>
 
                 <div class="user-profile-badge glass-badge" id="profileBadge">
@@ -393,6 +414,6 @@
 
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>
