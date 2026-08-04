@@ -130,6 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const nameInputModal = document.getElementById('nameInputModal');
     const saveNameBtn = document.getElementById('saveNameBtn');
     const closeNameModal = document.getElementById('closeNameModal');
+    const logoutBtn = document.getElementById('logoutBtn');
 
     // Telegram Sync Elements
     const telegramSyncBtn = document.getElementById('telegramSyncBtn');
@@ -335,21 +336,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     editNameBtn.addEventListener('click', () => {
         nameInputModal.value = userName;
-        nameModalBackdrop.classList.add('active');
+        nameModalBackdrop?.classList.add('active');
     });
 
-    closeNameModal.addEventListener('click', () => {
-        nameModalBackdrop.classList.remove('active');
+    closeNameModal?.addEventListener('click', () => {
+        nameModalBackdrop?.classList.remove('active');
     });
 
-    saveNameBtn.addEventListener('click', () => {
+    saveNameBtn?.addEventListener('click', () => {
         const newName = nameInputModal.value.trim();
         if (newName) {
             userName = newName;
             localStorage.setItem('chrono_username', userName);
             updateUserNameUI();
-            nameModalBackdrop.classList.remove('active');
+            nameModalBackdrop?.classList.remove('active');
             showToast(`Ismingiz saqlandi: ${userName}`, 'info');
+        }
+    });
+
+    logoutBtn?.addEventListener('click', () => {
+        if (confirm("Hisobdan chiqishni xohlaysizmi?")) {
+            localStorage.removeItem('chrono_userid');
+            localStorage.removeItem('chrono_username');
+            localStorage.removeItem('chrono_synccode');
+            localStorage.removeItem('chrono_tasks');
+            localStorage.removeItem('chrono_score');
+            location.reload();
         }
     });
 
@@ -584,27 +596,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         let updated = false;
 
         tasks.forEach(task => {
-            if (task.status === 'completed' || task.status === 'missed') return;
+            try {
+                if (task.status === 'completed' || task.status === 'missed') return;
+                
+                if (!task.time) return; // Safely skip if time missing
 
-            const [taskH, taskM] = task.time.split(':').map(Number);
-            const taskDate = new Date();
-            taskDate.setHours(taskH, taskM, 0, 0);
+                const [taskH, taskM] = task.time.split(':').map(Number);
+                const taskDate = new Date();
+                taskDate.setHours(taskH, taskM, 0, 0);
 
-            const diffMs = now - taskDate;
-            const diffMins = Math.floor(diffMs / 60000);
+                const diffMs = now - taskDate;
+                const diffMins = Math.floor(diffMs / 60000);
 
-            const bufferMs = task.bufferTime * 60 * 1000;
-            if (now >= (taskDate - bufferMs) && now < taskDate && !task.departureNotified) {
-                task.departureNotified = true;
-                showToast(`🚗 Yo'lga chiqish vaqti! ${task.location} manziliga yetib borish uchun ${task.bufferTime} min qoldi.`, 'warning');
-                updated = true;
-            }
+                const bufferMs = task.bufferTime * 60 * 1000;
+                if (now >= (taskDate - bufferMs) && now < taskDate && !task.departureNotified) {
+                    task.departureNotified = true;
+                    showToast(`🚗 Yo'lga chiqish vaqti! ${task.location} manziliga yetib borish uchun ${task.bufferTime} min qoldi.`, 'warning');
+                    updated = true;
+                }
 
-            if (diffMins >= 1 && task.status !== 'late') {
-                task.status = 'late';
-                deductScore(5);
-                updated = true;
-                triggerStrictWarning(task);
+                if (diffMins >= 1 && task.status !== 'late') {
+                    task.status = 'late';
+                    deductScore(5);
+                    updated = true;
+                    triggerStrictWarning(task);
+                }
+            } catch (err) {
+                console.error("Task tick error", err);
             }
         });
 

@@ -108,6 +108,9 @@
                     <button class="edit-btn" id="editNameBtn" title="Ismni o'zgartirish">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
+                    <button class="edit-btn" id="logoutBtn" title="Hisobdan chiqish" style="color: #ef4444; margin-left: 5px;">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
                 </div>
             </div>
         </header>
@@ -385,9 +388,22 @@
             </div>
         </div>
     </div>
-
         </div>
     </div>
+    </div>
+
+    <!-- Name Edit Modal -->
+    <div class="modal-backdrop" id="nameModalBackdrop">
+        <div class="modal-content glass-card">
+            <h2>Ismni o'zgartirish</h2>
+            <div class="form-group" style="margin: 20px 0;">
+                <input type="text" id="nameInputModal" placeholder="Yangi ism kiring..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" id="closeNameModal">Bekor qilish</button>
+                <button class="btn btn-primary" id="saveNameBtn">Saqlash</button>
+            </div>
+        </div>
     </div>
 
     <!-- Custom Notification Toast -->
