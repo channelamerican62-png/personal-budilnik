@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronoGuard | Aqlli Budilnik & Telegram Bot Sinxronizatsiyasi</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet.js Interactive Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="afternoon">
+
+    <!-- Dynamic Ambient Background -->
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header Section with Theme Switcher & Telegram Sync -->
+        <header class="glass-panel header-panel">
+            <div class="brand-section">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+                <div>
+                    <h1 class="brand-title">Chrono<span class="highlight">Guard</span></h1>
+                    <p class="brand-subtitle">Aqlli Budilnik & Telegram Real-Time Sinxronlash</p>
+                </div>
+            </div>
+
+            <!-- Profile, Live Clock & Theme Selector -->
+            <div class="header-right">
+                <!-- Telegram Sync Button -->
+                <button class="glass-badge" id="telegramSyncBtn" style="cursor:pointer; background:rgba(2, 132, 199, 0.15); border-color:rgba(2, 132, 199, 0.4); color:#38bdf8; font-weight:700;">
+                    <i class="fa-brands fa-telegram" style="font-size:1.2rem;"></i> Telegram Bot bilan Ulash
+                </button>
+
+                <!-- Theme Mode Selector -->
+                <div class="theme-select-wrap glass-badge">
+                    <i class="fa-solid fa-sun-plant-wilt" id="themeIcon"></i>
+                    <select id="themeSelector" class="theme-select">
+                        <option value="auto">🤖 Avto (Vaqtga ko'ra)</option>
+                        <option value="morning">🌅 Ertalab (Morning)</option>
+                        <option value="afternoon">☀️ Kunduz (Afternoon)</option>
+                        <option value="night">🌙 Tun (Night)</option>
+                    </select>
+                </div>
+
+                <div class="live-clock-badge glass-badge">
+                    <i class="fa-regular fa-clock"></i>
+                    <span id="liveTime">00:00:00</span>
+                    <span id="liveDate" class="live-date">2026-08-04</span>
+                </div>
+
+                <div class="user-profile-badge glass-badge" id="profileBadge">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span class="user-name-label">Foydalanuvchi:</span>
+                    <strong id="userNameDisplay" class="user-name-text">Ali</strong>
+                    <button class="edit-btn" id="editNameBtn" title="Ismni o'zgartirish">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats & Overview Cards -->
+        <section class="stats-grid">
+            <div class="glass-card stat-card">
+                <div class="stat-icon icon-emerald"><i class="fa-solid fa-trophy"></i></div>
+                <div class="stat-info">
+                    <span class="stat-title">Intizom Darajasi</span>
+                    <div class="stat-value-group">
+                        <h2 id="disciplineScore">100%</h2>
+                        <span class="stat-badge badge-success" id="scoreStatusBadge">A'lo</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="scoreProgressBar" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card stat-card">
+                <div class="stat-icon icon-teal"><i class="fa-solid fa-calendar-check"></i></div>
+                <div class="stat-info">
+                    <span class="stat-title">Bugungi Rejalar</span>
+                    <h2 id="totalTasksCount">0</h2>
+                    <span class="stat-desc" id="completedTasksCount">0 ta bajarildi</span>
+                </div>
+            </div>
+
+            <div class="glass-card stat-card">
+                <div class="stat-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="stat-info">
+                    <span class="stat-title">Kechikishlar</span>
+                    <h2 id="lateTasksCount" class="text-danger">0</h2>
+                    <span class="stat-desc text-muted">1 daqiqadan ko'p kechiktirilgan</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Layout: Form + Active Event Focus + Timeline -->
+        <main class="main-grid">
+            <!-- Left Column: Add Task Form with Live Map Integration -->
+            <section class="glass-card form-card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-plus-circle"></i> Yangi Reja Qo'shish</h3>
+                    <p>Uchrashuv vaqti va manzilini kiriting (Telegram Botga avto-sinchronlanadi)</p>
+                </div>
+
+                <form id="taskForm" class="task-form">
+                    <div class="form-group">
+                        <label for="taskTitle"><i class="fa-solid fa-heading"></i> Topshiriq / Uchrashuv Nomi</label>
+                        <input type="text" id="taskTitle" placeholder="Masalan: Golds Gym fitness mashg'uloti" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskTime"><i class="fa-regular fa-clock"></i> Boshlanish Vaqti</label>
+                            <input type="time" id="taskTime" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bufferTime"><i class="fa-solid fa-person-walking-luggage"></i> Yo'l Buferi (Eslatma)</label>
+                            <select id="bufferTime">
+                                <option value="15">15 daqiqa oldin</option>
+                                <option value="30" selected>30 daqiqa oldin</option>
+                                <option value="45">45 daqiqa oldin</option>
+                                <option value="60">1 soat oldin</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskLocation"><i class="fa-solid fa-location-dot"></i> Boriladigan Manzil (Xarita Bilan)</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="taskLocation" placeholder="Masalan: Golds Gym, Najot Ta'lim..." required>
+                            <button type="button" class="preset-loc-btn" id="presetLocBtn" title="Mashhur manzildan tanlash">
+                                <i class="fa-solid fa-map-pin"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-map-container glass-panel-inner" id="formMapContainer">
+                        <div class="map-status-bar">
+                            <span id="routeInfoText"><i class="fa-solid fa-route" style="color:var(--primary);"></i> Manzilni kiriting...</span>
+                        </div>
+                        <div id="formLiveMap" class="form-live-map"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="strictnessLevel"><i class="fa-solid fa-shield-cat"></i> Qattiqqo'llik Rejimi</label>
+                        <select id="strictnessLevel">
+                            <option value="strict" selected>🔥 Jiddiy (1 daqiqa kechikilsa ogohlantirish)</option>
+                            <option value="hardcore">⚡ Qattiqqo'l Coach (Kuchli takroriy ogohlantirish)</option>
+                            <option value="mild">🍃 Yumshoq Eslatgich</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <i class="fa-solid fa-bolt"></i> Rejani Saqlash va Sinxronlash
+                    </button>
+                </form>
+            </section>
+
+            <!-- Right Column: Live Focus Card & Today's Schedule Timeline -->
+            <section class="right-column">
+                <!-- Active Focus Card -->
+                <div class="glass-card active-focus-card" id="activeFocusCard">
+                    <div class="focus-badge"><i class="fa-solid fa-bullseye"></i> NAVBATDAGI ASOSIY REJA & MARSHRUT</div>
+                    <div id="focusContent">
+                        <p class="empty-focus-msg"><i class="fa-solid fa-calendar-day"></i> Hozircha rejalaringiz yo'q. Chap tomondan yangi reja qo'shing!</p>
+                    </div>
+                </div>
+
+                <!-- Schedule List -->
+                <div class="glass-card timeline-card">
+                    <div class="card-header timeline-header">
+                        <div>
+                            <h3><i class="fa-solid fa-list-check"></i> Bugungi Rejalar Ro'yxati</h3>
+                            <p>Real vaqt rejimidagi holatlar, manzillar va Telegram sinxronizatsiya</p>
+                        </div>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all">Hamma</button>
+                            <button class="filter-btn" data-filter="pending">Kutilmoqda</button>
+                            <button class="filter-btn" data-filter="late">Kechikmoqda</button>
+                            <button class="filter-btn" data-filter="completed">Bajarildi</button>
+                        </div>
+                    </div>
+
+                    <div class="tasks-list" id="tasksList">
+                        <!-- Dynamic Tasks rendered here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Telegram Bot Sync Modal -->
+    <div class="modal-backdrop" id="syncModalBackdrop">
+        <div class="glass-card modal-box" style="max-width:520px;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                <i class="fa-brands fa-telegram" style="font-size:2rem; color:#38bdf8;"></i>
+                <h3 style="margin:0;">Telegram Bot Bilan Sinxronlash</h3>
+            </div>
+            
+            <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
+                Saytdagi va Telegram botdagi budilniklaringizni 2 tomonlama real vaqtda bir-biriga ulash uchun:
+            </p>
+
+            <div class="glass-panel-inner" style="text-align:center; padding:16px; margin-bottom:16px;">
+                <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Sizning Sinxronlash Kodingiz:</span>
+                <h2 id="syncCodeDisplay" style="font-size:2.2rem; font-weight:800; color:var(--primary); letter-spacing:3px; margin:8px 0;">782-910</h2>
+                <p style="font-size:0.82rem; color:var(--text-muted);">
+                    Telegram'dagi <a href="https://t.me/personalclocknewbot" target="_blank" style="color:#38bdf8; font-weight:700;">@personalclocknewbot</a> botiga kirib ushbu kodni yuboring!
+                </p>
+            </div>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:16px 0;">
+
+            <p style="font-size:0.88rem; font-weight:600; margin-bottom:8px;">
+                Yoki Telegram Botdan olgan kodingizni bu yerga kiriting:
+            </p>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="syncCodeInput" placeholder="Masalan: 482-190" class="modal-input" style="margin:0;">
+                <button class="btn btn-primary" id="verifySyncCodeBtn" style="white-space:nowrap;">Ulash</button>
+            </div>
+
+            <div class="modal-actions" style="margin-top:20px;">
+                <button class="btn btn-secondary" id="closeSyncModal">Yopish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Map Route View Modal -->
+    <div class="modal-backdrop" id="mapModalBackdrop">
+        <div class="glass-card map-modal-box">
+            <div class="modal-map-header">
+                <div>
+                    <h3 id="mapModalTitle"><i class="fa-solid fa-map-location-dot"></i> Marshrutni Ko'rish</h3>
+                    <p id="mapModalSubtitle" class="text-muted">Real vaqtdagi GPS va manzil</p>
+                </div>
+                <button class="btn-icon" id="closeMapModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-route-stats" id="modalRouteStats">
+                <!-- Distance & Estimated Time -->
+            </div>
+
+            <div id="modalInteractiveMap" class="modal-interactive-map"></div>
+
+            <div class="modal-actions" style="margin-top:16px;">
+                <a href="#" id="openGoogleMapsDirectBtn" target="_blank" class="btn btn-primary" style="text-decoration:none;">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Google Maps Dasturida Ochish
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Name Modal -->
+    <div class="modal-backdrop" id="nameModalBackdrop">
+        <div class="glass-card modal-box">
+            <h3><i class="fa-solid fa-user-edit"></i> Foydalanuvchi Ismini O'zgartirish</h3>
+            <p>Ogohlantirishlarda ismingiz bilan murojaat qilinadi:</p>
+            <input type="text" id="nameInputModal" placeholder="Ismingizni kiriting..." class="modal-input">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="closeNameModal">Bekor qilish</button>
+                <button class="btn btn-primary" id="saveNameBtn">Saqlash</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STRICT WARNING MODAL (Emergency Flashing Red Glass Card) -->
+    <div class="modal-backdrop emergency-modal-backdrop" id="warningModalBackdrop">
+        <div class="glass-card emergency-modal-box">
+            <div class="emergency-header">
+                <div class="emergency-icon-wrap">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h2 class="emergency-title">JIDDIY OGOHLANTIRISH!</h2>
+                    <span class="emergency-subtitle" id="warningTimeBadge">1 daqiqa kechikish aniqlandi</span>
+                </div>
+            </div>
+
+            <div class="emergency-body">
+                <div class="warning-speech-bubble" id="warningSpeechText">
+                    <!-- Dynamic text -->
+                </div>
+
+                <div class="late-timer-box">
+                    <span>Kechikilgan vaqt:</span>
+                    <h3 id="lateTimerDisplay">00 daqiqa 00 soniya</h3>
+                </div>
+
+                <div class="warning-task-details glass-panel-inner" id="warningTaskDetails">
+                    <!-- Task info preview -->
+                </div>
+            </div>
+
+            <div class="emergency-actions">
+                <button class="btn btn-success-glow" id="arrivedNowBtn">
+                    <i class="fa-solid fa-circle-check"></i> Hozir Yetib Bordim!
+                </button>
+                <button class="btn btn-warning-glow" id="onMyWayBtn">
+                    <i class="fa-solid fa-person-running"></i> Yo'ldaman (5 min kechiktirish)
+                </button>
+                <button class="btn btn-danger-glow" id="missedEventBtn">
+                    <i class="fa-solid fa-xmark"></i> O'tkazib yuborildi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Notification Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
