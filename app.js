@@ -1372,41 +1372,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateDisciplineChart() {
-        const ctx = document.getElementById('disciplineChart');
-        if (!ctx) return;
-        
-        const labels = ['Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan', 'Bugun'];
-        const data = [100, 95, 90, 85, 92, 98, disciplineScore];
-        
-        if (disciplineChartInstance) {
-            disciplineChartInstance.data.datasets[0].data[6] = disciplineScore;
-            disciplineChartInstance.update();
-        } else {
-            disciplineChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Intizom Darajasi (%)',
-                        data: data,
-                        borderColor: '#678B6D',
-                        backgroundColor: 'rgba(103, 139, 109, 0.2)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { min: 0, max: 100 }
+        try {
+            const ctx = document.getElementById('disciplineChart');
+            if (!ctx || typeof Chart === 'undefined') return;
+            
+            const labels = ['Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan', 'Bugun'];
+            const data = [100, 95, 90, 85, 92, 98, disciplineScore];
+            
+            if (disciplineChartInstance) {
+                disciplineChartInstance.data.datasets[0].data[6] = disciplineScore;
+                disciplineChartInstance.update();
+            } else {
+                disciplineChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Intizom Darajasi (%)',
+                            data: data,
+                            borderColor: '#678B6D',
+                            backgroundColor: 'rgba(103, 139, 109, 0.2)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }]
                     },
-                    plugins: {
-                        legend: { display: false }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { min: 0, max: 100 }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
                     }
-                }
-            });
+                });
+            }
+        } catch (e) {
+            console.log("Discipline chart update error:", e);
         }
     }
 
