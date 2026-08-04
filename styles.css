@@ -35,6 +35,24 @@
     --map-invert: none;
 }
 
+body[data-theme="dark"] {
+    --bg-main: #0f172a;
+    --card-bg: #1e293b;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.15);
+    --shadow-soft: 8px 8px 20px #070a12, -8px -8px 20px #172439;
+    --shadow-pressed: inset 6px 6px 12px #070a12, inset -6px -6px 12px #172439;
+    --primary: #10b981;
+    --primary-hover: #059669;
+    --primary-glow: rgba(16, 185, 129, 0.3);
+    --secondary: #38bdf8;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-light: #0f172a;
+    --input-bg: #334155;
+    --map-invert: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -1093,3 +1111,40 @@ body {
 .cal-day-cell .cal-day-num {
     line-height: 1;
 }
+
+/* === Theme Toggle Button === */
+.theme-toggle-btn {
+    background: var(--card-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-soft);
+}
+
+.theme-toggle-btn:hover {
+    transform: scale(1.05);
+    background: var(--primary-glow);
+}
+
+/* Map tiles dark mode filter */
+body[data-theme="dark"] .leaflet-tile-pane {
+    filter: var(--map-invert);
+}
+
+/* Edit Task Modal Styles */
+.modal-backdrop.active {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    pointer-events: auto;
+}
+

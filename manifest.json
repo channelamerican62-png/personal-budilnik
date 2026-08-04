@@ -1,0 +1,21 @@
+{
+  "name": "ChronoGuard Intelligent Clock",
+  "short_name": "ChronoGuard",
+  "description": "Aqlli Budilnik & Telegram Real-Time Sinxronlash",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121824",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/hourglass-half.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/hourglass-half.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

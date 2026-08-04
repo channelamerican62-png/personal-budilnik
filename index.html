@@ -13,10 +13,14 @@
     <!-- Leaflet.js Interactive Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Chart.js (only once) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="styles.css?v=7">
-    <link rel="stylesheet" href="login.css?v=7">
+    <!-- PWA Manifest & Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10b981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/hourglass-half.svg">
+    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="stylesheet" href="login.css?v=8">
 </head>
 <body data-theme="afternoon">
 
@@ -119,6 +123,17 @@
                         <span class="weather-city" id="weatherCity">Aniqlanmoqda...</span>
                     </div>
                 </div>
+
+                <!-- Theme Toggle Button -->
+                <button class="theme-toggle-btn" id="themeToggleBtn" title="Mavzu rejimi (Tungi/Kunduzgi)">
+                    <i class="fa-solid fa-moon" id="themeToggleIcon"></i>
+                    <span id="themeToggleText">Tungi</span>
+                </button>
+
+                <!-- Push Notification Permission Button -->
+                <button class="glass-badge" id="notificationBtn" style="cursor:pointer; background:rgba(16, 185, 129, 0.15); border-color:rgba(16, 185, 129, 0.4); color:#10b981; font-weight:700;" title="Bildirishnomalarni yoqish">
+                    <i class="fa-solid fa-bell"></i>
+                </button>
 
                 <div class="user-profile-badge glass-badge" id="profileBadge">
                     <i class="fa-solid fa-user-shield"></i>
@@ -436,11 +451,48 @@
         </div>
     </div>
 
+    <!-- EDIT TASK MODAL -->
+    <div class="modal-backdrop" id="editTaskModalBackdrop">
+        <div class="glass-card modal-box" style="max-width:500px;">
+            <h3><i class="fa-solid fa-pen-to-square" style="color:var(--primary);"></i> Rejani Tahrirlash</h3>
+            <form id="editTaskForm" style="margin-top:16px;">
+                <input type="hidden" id="editTaskId">
+                <div class="form-group">
+                    <label for="editTaskTitle"><i class="fa-solid fa-heading"></i> Reja Nomi</label>
+                    <input type="text" id="editTaskTitle" class="modal-input" style="margin-bottom:12px;" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTaskTime"><i class="fa-regular fa-clock"></i> Vaqti</label>
+                        <input type="time" id="editTaskTime" class="modal-input" style="margin-bottom:12px;" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBufferTime"><i class="fa-solid fa-person-walking-luggage"></i> Bufer</label>
+                        <select id="editBufferTime" class="modal-input" style="margin-bottom:12px;">
+                            <option value="15">15 daqiqa oldin</option>
+                            <option value="30">30 daqiqa oldin</option>
+                            <option value="45">45 daqiqa oldin</option>
+                            <option value="60">1 soat oldin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskLocation"><i class="fa-solid fa-location-dot"></i> Manzil</label>
+                    <input type="text" id="editTaskLocation" class="modal-input" style="margin-bottom:12px;" required>
+                </div>
+                <div class="modal-actions" style="margin-top:16px;">
+                    <button type="button" class="btn btn-secondary" id="closeEditTaskModal">Bekor qilish</button>
+                    <button type="submit" class="btn btn-primary" id="saveEditTaskBtn">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Custom Notification Toast -->
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=8"></script>
 </body>
 </html>

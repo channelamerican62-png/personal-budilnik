@@ -8,7 +8,72 @@ document.addEventListener('DOMContentLoaded', async () => {
     const API_BASE = 'https://chronoguard-backend.onrender.com/api'; 
     // const API_BASE = 'http://localhost:3000/api'; // (Lokal test uchun)
 
-    // --- AUTHENTICATION MOCK LOGIC ---
+    // --- PWA SERVICE WORKER REGISTRATION ---
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(() => console.log('Service Worker Registered'))
+            .catch(err => console.log('SW Registration error:', err));
+    }
+
+    // --- DARK MODE THEME SYSTEM ---
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeToggleIcon = document.getElementById('themeToggleIcon');
+    const themeToggleText = document.getElementById('themeToggleText');
+
+    function applyTheme(theme) {
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem('chrono_theme', theme);
+        if (theme === 'dark') {
+            if (themeToggleIcon) themeToggleIcon.className = 'fa-solid fa-sun';
+            if (themeToggleText) themeToggleText.textContent = 'Kunduzgi';
+        } else {
+            if (themeToggleIcon) themeToggleIcon.className = 'fa-solid fa-moon';
+            if (themeToggleText) themeToggleText.textContent = 'Tungi';
+        }
+    }
+
+    const savedTheme = localStorage.getItem('chrono_theme') || 'afternoon';
+    applyTheme(savedTheme);
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const nextTheme = currentTheme === 'dark' ? 'afternoon' : 'dark';
+            applyTheme(nextTheme);
+        });
+    }
+
+    // --- PUSH NOTIFICATION SYSTEM ---
+    const notificationBtn = document.getElementById('notificationBtn');
+    if (notificationBtn) {
+        notificationBtn.addEventListener('click', () => {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        showToast("✅ Bildirishnomalar yoqildi!", 'success');
+                        notificationBtn.style.color = '#10b981';
+                        new Notification("ChronoGuard", {
+                            body: "Bildirishnomalar muvaffaqiyatli yoqildi!",
+                            icon: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/hourglass-half.svg"
+                        });
+                    } else {
+                        showToast("❌ Bildirishnomalarga ruxsat berilmadi", 'warning');
+                    }
+                });
+            } else {
+                showToast("Brauzeringiz bildirishnomalarni qo'llab-quvvatlamaydi", 'danger');
+            }
+        });
+    }
+
+    function sendPushNotification(title, body) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(title, {
+                body: body,
+                icon: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/hourglass-half.svg"
+            });
+        }
+    }
     const loginScreen = document.getElementById('login-screen');
     const appScreen = document.getElementById('app-screen');
     
@@ -1086,6 +1151,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <button class="btn-arrive" data-id="${task.id}">
                             <i class="fa-solid fa-check"></i> Yetib bordim
                         </button>
+                        <button class="btn-icon btn-edit-task" data-id="${task.id}" title="Tahrirlash">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
                     ` : ''}
                     <button class="btn-icon btn-delete" data-id="${task.id}">
                         <i class="fa-solid fa-trash-can" style="color:#ef4444;"></i>
@@ -1096,6 +1164,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (routeBtn) routeBtn.addEventListener('click', () => openRouteModal(task));
             const arriveBtn = card.querySelector('.btn-arrive');
             if (arriveBtn) arriveBtn.addEventListener('click', () => completeTask(task.id));
+            const editBtn = card.querySelector('.btn-edit-task');
+            if (editBtn) editBtn.addEventListener('click', () => openEditTaskModal(task));
             const deleteBtn = card.querySelector('.btn-delete');
             if (deleteBtn) deleteBtn.addEventListener('click', () => deleteTask(task.id));
             tasksListEl.appendChild(card);
@@ -1150,6 +1220,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <button class="btn-arrive" data-id="${task.id}">
                             <i class="fa-solid fa-check"></i> Yetib bordim
                         </button>
+                        <button class="btn-icon btn-edit-task" data-id="${task.id}" title="Tahrirlash">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
                     ` : ''}
                     <button class="btn-icon btn-delete" data-id="${task.id}" title="O'chirish">
                         <i class="fa-solid fa-trash-can" style="color:#ef4444;"></i>
@@ -1165,6 +1238,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const arriveBtn = card.querySelector('.btn-arrive');
             if (arriveBtn) {
                 arriveBtn.addEventListener('click', () => completeTask(task.id));
+            }
+
+            const editBtn = card.querySelector('.btn-edit-task');
+            if (editBtn) {
+                editBtn.addEventListener('click', () => openEditTaskModal(task));
             }
 
             const deleteBtn = card.querySelector('.btn-delete');
@@ -1412,6 +1490,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // --- EDIT TASK MODAL LOGIC ---
+    const editTaskModalBackdrop = document.getElementById('editTaskModalBackdrop');
+    const closeEditTaskModal = document.getElementById('closeEditTaskModal');
+    const editTaskForm = document.getElementById('editTaskForm');
+    const editTaskId = document.getElementById('editTaskId');
+    const editTaskTitle = document.getElementById('editTaskTitle');
+    const editTaskTime = document.getElementById('editTaskTime');
+    const editBufferTime = document.getElementById('editBufferTime');
+    const editTaskLocation = document.getElementById('editTaskLocation');
+
+    function openEditTaskModal(task) {
+        if (!editTaskModalBackdrop) return;
+        editTaskId.value = task.id;
+        editTaskTitle.value = task.title;
+        editTaskTime.value = task.time;
+        editBufferTime.value = task.bufferTime || 30;
+        editTaskLocation.value = task.location;
+        editTaskModalBackdrop.classList.add('active');
+    }
+
+    closeEditTaskModal?.addEventListener('click', () => {
+        editTaskModalBackdrop?.classList.remove('active');
+    });
+
+    editTaskForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = editTaskId.value;
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+            task.title = editTaskTitle.value.trim();
+            task.time = editTaskTime.value;
+            task.bufferTime = parseInt(editBufferTime.value);
+            const locationText = editTaskLocation.value.trim();
+            if (task.location !== locationText) {
+                task.location = locationText;
+                const coords = await geocodeLocation(locationText);
+                task.lat = coords.lat;
+                task.lng = coords.lng;
+            }
+            saveTasksLocal();
+            renderTasks();
+            renderFocusCard();
+            updateStatsUI();
+            if (typeof renderCalendar === 'function') renderCalendar();
+            editTaskModalBackdrop?.classList.remove('active');
+            showToast("✏️ Reja muvaffaqiyatli tahrirlandi!", 'success');
+        }
+    });
+
     function showToast(message, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
@@ -1422,7 +1549,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (type === 'danger') icon = 'fa-circle-xmark';
 
         toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${escapeHtml(message)}</span>`;
-        toastContainer.appendChild(toast);
+        if (toastContainer) toastContainer.appendChild(toast);
+
+        // Send push notification if tab is hidden or for warnings/danger
+        if (type === 'warning' || type === 'danger' || document.hidden) {
+            sendPushNotification("ChronoGuard", message);
+        }
 
         setTimeout(() => {
             toast.style.opacity = '0';
