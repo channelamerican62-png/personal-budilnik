@@ -15,8 +15,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Chart.js (only once) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="styles.css?v=6">
-    <link rel="stylesheet" href="login.css?v=6">
+    <link rel="stylesheet" href="styles.css?v=7">
+    <link rel="stylesheet" href="login.css?v=7">
 </head>
 <body data-theme="afternoon">
 
@@ -259,6 +259,33 @@
                 </div>
             </section>
 
+            <!-- Mini Calendar Widget -->
+            <section class="glass-card" style="margin-top: 24px;" id="calendarCard">
+                <div class="card-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 16px;">
+                    <h3 style="margin:0;"><i class="fa-solid fa-calendar-days" style="color:var(--primary);"></i> Kalendar</h3>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button class="btn-icon" id="calPrevBtn" title="Oldingi oy"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span id="calMonthYear" style="font-weight:700; font-size:0.95rem; min-width:130px; text-align:center;"></span>
+                        <button class="btn-icon" id="calNextBtn" title="Keyingi oy"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:8px;">
+                    <div class="cal-day-label">Du</div>
+                    <div class="cal-day-label">Se</div>
+                    <div class="cal-day-label">Ch</div>
+                    <div class="cal-day-label">Pa</div>
+                    <div class="cal-day-label">Ju</div>
+                    <div class="cal-day-label">Sh</div>
+                    <div class="cal-day-label">Ya</div>
+                </div>
+                <div id="calendarGrid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px;"></div>
+                <div style="display:flex; gap:14px; margin-top:14px; flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--text-muted);"><span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span> Bajarildi</div>
+                    <div style="display:flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--text-muted);"><span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span> Reja bor</div>
+                    <div style="display:flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--text-muted);"><span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span> Kechikdi</div>
+                </div>
+            </section>
+
             <!-- Right Column: Live Focus Card & Today's Schedule Timeline -->
             <section class="right-column">
                 <!-- Active Focus Card -->
@@ -414,6 +441,6 @@
 
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=7"></script>
 </body>
 </html>

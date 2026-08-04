@@ -395,6 +395,114 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // --- Mini Calendar Logic ---
+    let calViewYear = new Date().getFullYear();
+    let calViewMonth = new Date().getMonth();
+    let calSelectedDate = null;
+
+    const UZ_MONTHS = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktyabr','Noyabr','Dekabr'];
+
+    function getTaskDotColors(dateStr) {
+        // Returns array of colors for dots on a given date (YYYY-MM-DD)
+        const dayTasks = tasks.filter(t => {
+            if (!t.createdAt) return false;
+            return t.createdAt.startsWith(dateStr);
+        });
+        if (dayTasks.length === 0) return [];
+        const colors = [];
+        if (dayTasks.some(t => t.status === 'completed')) colors.push('#10b981');
+        if (dayTasks.some(t => t.status === 'late' || t.status === 'missed')) colors.push('#ef4444');
+        if (dayTasks.some(t => t.status === 'pending')) colors.push('#f59e0b');
+        return colors.slice(0, 3);
+    }
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        const label = document.getElementById('calMonthYear');
+        if (!grid || !label) return;
+
+        label.textContent = `${UZ_MONTHS[calViewMonth]} ${calViewYear}`;
+
+        const today = new Date();
+        const firstDay = new Date(calViewYear, calViewMonth, 1);
+        // Monday=0 start
+        let startDow = firstDay.getDay(); // 0=Sun
+        startDow = startDow === 0 ? 6 : startDow - 1; // convert to Mon-start
+
+        const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+        const daysInPrevMonth = new Date(calViewYear, calViewMonth, 0).getDate();
+
+        grid.innerHTML = '';
+
+        // Prev month filler
+        for (let i = startDow - 1; i >= 0; i--) {
+            const day = daysInPrevMonth - i;
+            const cell = document.createElement('div');
+            cell.className = 'cal-day-cell other-month';
+            cell.innerHTML = `<span class="cal-day-num">${day}</span>`;
+            grid.appendChild(cell);
+        }
+
+        // Current month days
+        for (let d = 1; d <= daysInMonth; d++) {
+            const cell = document.createElement('div');
+            const isToday = (d === today.getDate() && calViewMonth === today.getMonth() && calViewYear === today.getFullYear());
+            const dateStr = `${calViewYear}-${String(calViewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const dots = getTaskDotColors(dateStr);
+            
+            let cls = 'cal-day-cell';
+            if (isToday) cls += ' today';
+            if (calSelectedDate === dateStr) cls += ' selected';
+            if (dots.length > 0) cls += ' has-tasks';
+            
+            cell.className = cls;
+            cell.innerHTML = `
+                <span class="cal-day-num">${d}</span>
+                ${dots.length > 0 && !isToday ? `<div class="cal-dots">${dots.map(c => `<span class="cal-dot" style="background:${c}"></span>`).join('')}</div>` : ''}
+            `;
+
+            cell.addEventListener('click', () => {
+                if (calSelectedDate === dateStr) {
+                    calSelectedDate = null;
+                    // Show all tasks
+                    currentFilter = 'all';
+                } else {
+                    calSelectedDate = dateStr;
+                    // Could filter tasks by date in future
+                }
+                renderCalendar();
+            });
+
+            grid.appendChild(cell);
+        }
+
+        // Next month filler
+        const totalCells = grid.children.length;
+        const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+        for (let i = 1; i <= remaining; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cal-day-cell other-month';
+            cell.innerHTML = `<span class="cal-day-num">${i}</span>`;
+            grid.appendChild(cell);
+        }
+    }
+
+    const calPrevBtn = document.getElementById('calPrevBtn');
+    const calNextBtn = document.getElementById('calNextBtn');
+    if (calPrevBtn) calPrevBtn.addEventListener('click', () => {
+        calViewMonth--;
+        if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
+        renderCalendar();
+    });
+    if (calNextBtn) calNextBtn.addEventListener('click', () => {
+        calViewMonth++;
+        if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
+        renderCalendar();
+    });
+
+    // Initial calendar render
+    renderCalendar();
+
     // --- API Sync Functions ---
     async function initServerAccount() {
         try {

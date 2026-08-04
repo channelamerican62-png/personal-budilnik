@@ -1023,3 +1023,73 @@ body {
     .task-item-card { flex-direction: column; align-items: flex-start; }
     .task-actions { width: 100%; justify-content: flex-end; }
 }
+
+/* === Mini Calendar Widget === */
+.cal-day-label {
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    padding: 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cal-day-cell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    min-height: 36px;
+    color: var(--text-main);
+}
+
+.cal-day-cell:hover {
+    background: rgba(103, 139, 109, 0.15);
+    transform: scale(1.08);
+}
+
+.cal-day-cell.today {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(103,139,109,0.4);
+}
+
+.cal-day-cell.other-month {
+    color: var(--text-muted);
+    opacity: 0.4;
+}
+
+.cal-day-cell.selected {
+    background: rgba(103, 139, 109, 0.25);
+    border: 2px solid var(--primary);
+}
+
+.cal-day-cell.has-tasks .cal-dots {
+    display: flex;
+    gap: 2px;
+    position: absolute;
+    bottom: 3px;
+}
+
+.cal-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+}
+
+.cal-day-cell.today .cal-dots {
+    display: none;
+}
+
+.cal-day-cell .cal-day-num {
+    line-height: 1;
+}
