@@ -284,6 +284,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let calViewYear = new Date().getFullYear();
     let calViewMonth = new Date().getMonth();
     let calSelectedDate = null;
+    let rankMode = 'weekly';
     const UZ_MONTHS = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktyabr','Noyabr','Dekabr'];
 
     let userId = localStorage.getItem('chrono_userid') || ('user_' + Date.now());
@@ -1562,8 +1563,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- LEADERBOARD & RATING LOGIC ---
-    let rankMode = 'weekly';
-
     function renderLeaderboard() {
         const userRankPos = document.getElementById('userRankPos');
         const userRankScore = document.getElementById('userRankScore');
