@@ -8,6 +8,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     const API_BASE = 'https://chronoguard-backend.onrender.com/api'; 
     // const API_BASE = 'http://localhost:3000/api'; // (Lokal test uchun)
 
+    // --- AUTHENTICATION MOCK LOGIC ---
+    const loginScreen = document.getElementById('login-screen');
+    const appScreen = document.getElementById('app-screen');
+    
+    function handleLogin() {
+        // Mock successful login transition
+        loginScreen.style.animation = "fadeOut 0.5s forwards";
+        setTimeout(() => {
+            loginScreen.style.display = 'none';
+            appScreen.style.display = 'block';
+            appScreen.style.animation = "fadeIn 0.5s forwards";
+        }, 500);
+    }
+
+    const mockSignInBtn = document.getElementById('mockSignInBtn');
+    const mockGoogleBtn = document.getElementById('mockGoogleBtn');
+    if(mockSignInBtn) mockSignInBtn.addEventListener('click', handleLogin);
+    if(mockGoogleBtn) mockGoogleBtn.addEventListener('click', handleLogin);
+
     // --- State Management ---
     let userId = localStorage.getItem('chrono_userid') || ('user_' + Date.now());
     let userName = localStorage.getItem('chrono_username') || 'Ali';

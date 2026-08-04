@@ -2,74 +2,32 @@
    ChronoGuard - Dynamic Time-of-Day Themes (Morning / Autumn Afternoon / Wood+White Night)
    ========================================================================== */
 
-/* Default / Autumn Afternoon Theme (🍂 Kunduz / Kuz Mavzusi) */
+/* Minimalist Black & White Theme (Unified for sleek modern look) */
 :root,
-body[data-theme="afternoon"] {
-    --bg-main: #18100c;
-    --card-bg: rgba(34, 21, 15, 0.85);
-    --card-bg-hover: rgba(48, 29, 21, 0.92);
-    --border-color: rgba(217, 119, 6, 0.35);
-    --border-hover: rgba(234, 88, 12, 0.6);
-    --shadow-soft: 0 15px 35px rgba(0, 0, 0, 0.65);
-    
-    --primary: #f59e0b;
-    --primary-hover: #ea580c;
-    --primary-glow: rgba(245, 158, 11, 0.45);
-    --secondary: #d97706;
-    
-    --text-main: #fffbeb;
-    --text-muted: #fde68a;
-    --input-bg: rgba(18, 11, 8, 0.8);
-    --blob-1: #7c2d12;
-    --blob-2: #9a3412;
-    --blob-3: #b45309;
-    --map-invert: sepia(0.5) contrast(1.1) brightness(0.7);
-}
-
-/* Morning Theme (🌅 Ertalab - Warm Sunrise Amber/Gold Light) */
-body[data-theme="morning"] {
-    --bg-main: #fffbeb;
-    --card-bg: #ffffff;
-    --card-bg-hover: #fef3c7;
-    --border-color: #fde68a;
-    --border-hover: #fcd34d;
-    --shadow-soft: 0 10px 25px -5px rgba(217, 119, 6, 0.08);
-    
-    --primary: #d97706;
-    --primary-hover: #b45309;
-    --primary-glow: rgba(217, 119, 6, 0.3);
-    --secondary: #ea580c;
-    
-    --text-main: #451a03;
-    --text-muted: #78350f;
-    --input-bg: #fffdf5;
-    --blob-1: #fef3c7;
-    --blob-2: #ffe4e6;
-    --blob-3: #ffedd5;
-    --map-invert: sepia(0.3) saturate(1.2);
-}
-
-/* Night Theme (🌙 Tun - Wood + Oq + Tun / Dark Mahogany Wood & Crisp White) */
+body[data-theme="afternoon"],
+body[data-theme="morning"],
 body[data-theme="night"] {
-    --bg-main: #0f0a07;
-    --card-bg: rgba(26, 17, 12, 0.88);
-    --card-bg-hover: rgba(38, 25, 18, 0.94);
-    --border-color: rgba(217, 119, 6, 0.38);
-    --border-hover: rgba(245, 158, 11, 0.6);
-    --shadow-soft: 0 20px 45px rgba(0, 0, 0, 0.8);
+    --bg-main: #f9f9f9;
+    --card-bg: #ffffff;
+    --card-bg-hover: #f1f1f1;
+    --border-color: #e0e0e0;
+    --border-hover: #cccccc;
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.05);
     
-    --primary: #ffffff;
-    --primary-hover: #fde68a;
-    --primary-glow: rgba(255, 255, 255, 0.4);
-    --secondary: #d97706;
+    --primary: #1a1a1a;
+    --primary-hover: #333333;
+    --primary-glow: rgba(26, 26, 26, 0.2);
+    --secondary: #666666;
     
-    --text-main: #ffffff;
-    --text-muted: #fef3c7;
-    --input-bg: rgba(12, 8, 5, 0.85);
-    --blob-1: #451a03;
-    --blob-2: #7c2d12;
-    --blob-3: #27160c;
-    --map-invert: brightness(0.65) invert(0.85) sepia(0.5) hue-rotate(-30deg);
+    --text-main: #1a1a1a;
+    --text-muted: #888888;
+    --input-bg: #f5f5f5;
+    
+    /* Subtle geometric blobs for background instead of bright colors */
+    --blob-1: #e8e8e8;
+    --blob-2: #f0f0f0;
+    --blob-3: #e0e0e0;
+    --map-invert: sepia(0) contrast(1) brightness(1) grayscale(0.2);
 }
 
 * {

@@ -14,15 +14,72 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="login.css">
 </head>
 <body data-theme="afternoon">
 
-    <!-- Dynamic Ambient Background -->
-    <div class="bg-blobs">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-wrapper">
+        <div class="login-left">
+            <div class="login-bg" style="background-image: url('bg_image.png');"></div>
+            <div class="login-overlay">
+                <h1>ChronoGuard Intelligent<br>Time Management System<br>for Modern Professionals</h1>
+            </div>
+        </div>
+        
+        <div class="login-right">
+            <div class="menu-icon"><i class="fa-solid fa-bars"></i></div>
+            
+            <div class="login-form-container">
+                <h2>Welcome<br>Back</h2>
+                
+                <form id="authForm" onsubmit="event.preventDefault(); document.getElementById('mockSignInBtn').click();">
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Password</label>
+                        <div class="pwd-wrapper">
+                            <input type="password" id="loginPwd" placeholder="Enter your password" required>
+                            <i class="fa-regular fa-eye-slash toggle-pwd"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="form-options">
+                        <label class="checkbox-container">
+                            <input type="checkbox" checked>
+                            <span class="checkmark"></span>
+                            Remember me
+                        </label>
+                        <a href="#" class="forgot-link">Forgot Password</a>
+                    </div>
+                    
+                    <button type="button" id="mockSignInBtn" class="btn-dark">Sign in</button>
+                </form>
+                
+                <div class="divider"><span>Or</span></div>
+                
+                <button type="button" id="mockGoogleBtn" class="btn-outline">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google">
+                    Sign in with Google
+                </button>
+            </div>
+            
+            <!-- Bottom Right Decor -->
+            <div class="geo-decor"></div>
+        </div>
     </div>
+
+    <!-- Main App Screen (Hidden initially) -->
+    <div id="app-screen" style="display: none;">
+        <!-- Dynamic Ambient Background -->
+        <div class="bg-blobs">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
 
     <div class="app-container">
         <!-- Header Section with Theme Switcher & Telegram Sync -->
@@ -320,9 +377,15 @@
         </div>
     </div>
 
+        </div>
+    </div>
+    </div>
+
     <!-- Custom Notification Toast -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Google Identity Services (Tayyorgarlik uchun) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="app.js"></script>
 </body>
 </html>
