@@ -12,7 +12,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginScreen = document.getElementById('login-screen');
     const appScreen = document.getElementById('app-screen');
     
-    function handleLogin() {
+    function handleLogin(e) {
+        if (e) e.preventDefault();
+        
+        const emailInput = document.getElementById('loginEmail');
+        const pwdInput = document.getElementById('loginPwd');
+        
+        if (emailInput && pwdInput) {
+            const email = emailInput.value.trim();
+            const pwd = pwdInput.value.trim();
+            
+            if (!email || !pwd) {
+                alert("Kechirasiz, tizimga kirish uchun Email va Parolni kiritishingiz shart!");
+                return;
+            }
+            if (pwd.length < 4) {
+                alert("Parol juda qisqa! Kamida 4 ta belgi bo'lishi kerak.");
+                return;
+            }
+            
+            // Generate basic username from email
+            const newUserName = email.split('@')[0];
+            userName = newUserName;
+            localStorage.setItem('chrono_username', userName);
+            
+            const userNameDisplay = document.getElementById('userNameDisplay');
+            if (userNameDisplay) userNameDisplay.textContent = userName;
+        }
+
         // Mock successful login transition
         loginScreen.style.animation = "fadeOut 0.5s forwards";
         setTimeout(() => {
