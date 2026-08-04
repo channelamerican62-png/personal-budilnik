@@ -19,8 +19,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/hourglass-half.svg">
-    <link rel="stylesheet" href="styles.css?v=200">
-    <link rel="stylesheet" href="login.css?v=200">
+    <link rel="stylesheet" href="styles.css?v=300">
+    <link rel="stylesheet" href="login.css?v=300">
 </head>
 <body data-theme="afternoon">
 
@@ -184,15 +184,51 @@
             </div>
         </section>
 
-        <!-- Discipline Chart Section -->
-        <section class="glass-card chart-section" style="margin-bottom: 24px; padding: 20px;">
-            <div class="card-header" style="margin-bottom: 10px;">
-                <h3><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Haftalik Intizom Dinamikasi</h3>
+        <!-- Discipline Chart & Leaderboard Grid -->
+        <section class="chart-leaderboard-grid">
+            <!-- Left: Discipline Chart -->
+            <div class="glass-card chart-section" style="padding: 20px;">
+                <div class="card-header" style="margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0;"><i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Haftalik Intizom Dinamikasi</h3>
+                    <span class="stat-badge badge-success" id="rankBadge">🏆 Top Participant</span>
+                </div>
+                <div style="position: relative; height: 180px; width: 100%;">
+                    <canvas id="disciplineChart"></canvas>
+                </div>
             </div>
-            <div style="position: relative; height: 200px; width: 100%;">
-                <canvas id="disciplineChart"></canvas>
+
+            <!-- Right: Haftalik & Oylik Reyting (Leaderboard) -->
+            <div class="glass-card" style="padding: 20px;" id="leaderboardCard">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                    <h3 style="margin:0;"><i class="fa-solid fa-trophy" style="color:#f59e0b;"></i> Intizom Reytingi</h3>
+                    <div style="display:flex; gap:6px;">
+                        <button class="filter-btn active" id="rankWeeklyBtn" style="padding: 4px 10px; font-size: 0.8rem;">Haftalik</button>
+                        <button class="filter-btn" id="rankMonthlyBtn" style="padding: 4px 10px; font-size: 0.8rem;">Oylik</button>
+                    </div>
+                </div>
+
+                <div class="leaderboard-stats-row" style="display:flex; gap:10px; margin-bottom:12px;">
+                    <div class="glass-panel-inner" style="flex:1; padding:8px; text-align:center; border-radius:10px; background:rgba(0,0,0,0.03);">
+                        <span style="font-size:0.72rem; color:var(--text-muted);">O'rningiz</span>
+                        <h4 id="userRankPos" style="color:var(--primary); font-size:1rem; margin:2px 0 0 0;">#1 🥇</h4>
+                    </div>
+                    <div class="glass-panel-inner" style="flex:1; padding:8px; text-align:center; border-radius:10px; background:rgba(0,0,0,0.03);">
+                        <span style="font-size:0.72rem; color:var(--text-muted);" id="rankPeriodLabel">Haftalik Ball</span>
+                        <h4 id="userRankScore" style="color:var(--text-main); font-size:1rem; margin:2px 0 0 0;">0%</h4>
+                    </div>
+                    <div class="glass-panel-inner" style="flex:1; padding:8px; text-align:center; border-radius:10px; background:rgba(0,0,0,0.03);">
+                        <span style="font-size:0.72rem; color:var(--text-muted);">Unvon</span>
+                        <h4 id="userRankTitle" style="color:#f59e0b; font-size:0.8rem; margin:2px 0 0 0; font-weight:700;">Boshlang'ich</h4>
+                    </div>
+                </div>
+
+                <!-- Leaderboard List -->
+                <div id="leaderboardList" style="display:flex; flex-direction:column; gap:6px; max-height:120px; overflow-y:auto;">
+                    <!-- Dynamic entries -->
+                </div>
             </div>
         </section>
+
 
         <!-- Main Layout: Form + Active Event Focus + Timeline -->
         <main class="main-grid">
@@ -493,6 +529,6 @@
 
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="app.js?v=200"></script>
+    <script src="app.js?v=300"></script>
 </body>
 </html>

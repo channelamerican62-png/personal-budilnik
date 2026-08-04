@@ -290,7 +290,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     let userName = localStorage.getItem('chrono_username') || 'Ali';
     let syncCode = localStorage.getItem('chrono_synccode') || '';
     let tasks = [];
-    let disciplineScore = parseInt(localStorage.getItem('chrono_score')) || 100;
+    
+    // Per-user discipline score (New users start at 0%)
+    const userScoreKey = 'chrono_score_' + userName;
+    let disciplineScore = localStorage.getItem(userScoreKey) !== null 
+        ? parseInt(localStorage.getItem(userScoreKey)) 
+        : 0;
     let disciplineChartInstance = null;
 
     let currentFilter = 'all';
@@ -1070,13 +1075,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (task) {
             task.status = 'completed';
             task.completedAt = new Date().toISOString();
-            disciplineScore = Math.min(100, disciplineScore + 2);
+
+            // Calculate completion timing for scoring (+35% on-time, +65% early)
+            const now = new Date();
+            const [tH, tM] = task.time.split(':').map(Number);
+            const taskDate = new Date();
+            taskDate.setHours(tH, tM, 0, 0);
+            
+            const bufferMs = (task.bufferTime || 30) * 60 * 1000;
+            const bufferStartDate = new Date(taskDate.getTime() - bufferMs);
+
+            if (now < bufferStartDate) {
+                // Ertaroq bajarildi (Early)! +65%
+                disciplineScore = Math.min(100, disciplineScore + 65);
+                showToast(`🚀 Topshiriq ertaroq bajarildi! Intizomingizga +65% ball berildi!`, 'success');
+            } else if (now <= new Date(taskDate.getTime() + 15 * 60 * 1000)) {
+                // O'z vaqtida bajarildi (On-Time)! +35%
+                disciplineScore = Math.min(100, disciplineScore + 35);
+                showToast(`✅ Topshiriq o'z vaqtida bajarildi! Intizomingizga +35% ball berildi!`, 'success');
+            } else {
+                // Kechikib bajarildi
+                disciplineScore = Math.max(0, disciplineScore - 15);
+                showToast(`⚠️ Topshiriq kechikib bajarildi. Intizomdan -15% ayirildi.`, 'warning');
+            }
         }
 
         saveTasksLocal();
         renderTasks();
         renderFocusCard();
         updateStatsUI();
+        renderLeaderboard();
     }
 
     async function deleteTask(id) {
@@ -1369,6 +1397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const lateCount = tasks.filter(t => t.status === 'late' || t.status === 'missed').length;
         lateTasksCountEl.textContent = lateCount;
         updateDisciplineChart();
+        renderLeaderboard();
         if (typeof renderCalendar === 'function') renderCalendar();
     }
 
@@ -1532,6 +1561,76 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // --- LEADERBOARD & RATING LOGIC ---
+    let rankMode = 'weekly';
+
+    function renderLeaderboard() {
+        const userRankPos = document.getElementById('userRankPos');
+        const userRankScore = document.getElementById('userRankScore');
+        const userRankTitle = document.getElementById('userRankTitle');
+        const rankBadge = document.getElementById('rankBadge');
+        const leaderboardList = document.getElementById('leaderboardList');
+        const rankPeriodLabel = document.getElementById('rankPeriodLabel');
+        if (!leaderboardList) return;
+
+        if (rankPeriodLabel) {
+            rankPeriodLabel.textContent = rankMode === 'weekly' ? 'Haftalik Ball' : 'Oylik Ball';
+        }
+
+        // Competitors simulation with user's real live score
+        const competitors = [
+            { name: userName + " (Siz)", score: disciplineScore, isUser: true },
+            { name: "Jasur M.", score: rankMode === 'weekly' ? 82 : 88, isUser: false },
+            { name: "Rayhona S.", score: rankMode === 'weekly' ? 60 : 75, isUser: false },
+            { name: "Bobur T.", score: rankMode === 'weekly' ? 35 : 45, isUser: false }
+        ];
+
+        competitors.sort((a, b) => b.score - a.score);
+        const userIndex = competitors.findIndex(c => c.isUser);
+        const userPos = userIndex + 1;
+
+        let medal = userPos === 1 ? '🥇' : userPos === 2 ? '🥈' : userPos === 3 ? '🥉' : '🎗️';
+        if (userRankPos) userRankPos.textContent = `#${userPos} ${medal}`;
+        if (userRankScore) userRankScore.textContent = `${disciplineScore}%`;
+
+        let title = "🌱 Boshlang'ich";
+        if (disciplineScore >= 85) title = "👑 Intizom Qahramoni";
+        else if (disciplineScore >= 65) title = "🥇 Oltin Daraja";
+        else if (disciplineScore >= 35) title = "⚡ Intizomli";
+
+        if (userRankTitle) userRankTitle.textContent = title;
+        if (rankBadge) rankBadge.textContent = `${medal} Top #${userPos} Participant`;
+
+        leaderboardList.innerHTML = competitors.map((comp, idx) => `
+            <div class="leaderboard-row-item ${comp.isUser ? 'is-user' : ''}">
+                <div class="leaderboard-user-info">
+                    <span class="leaderboard-rank-num">#${idx + 1}</span>
+                    <span>${escapeHtml(comp.name)}</span>
+                </div>
+                <strong style="color:${comp.isUser ? 'var(--primary)' : 'var(--text-main)'}">${comp.score}%</strong>
+            </div>
+        `).join('');
+    }
+
+    const rankWeeklyBtn = document.getElementById('rankWeeklyBtn');
+    const rankMonthlyBtn = document.getElementById('rankMonthlyBtn');
+    if (rankWeeklyBtn) {
+        rankWeeklyBtn.addEventListener('click', () => {
+            rankMode = 'weekly';
+            rankWeeklyBtn.classList.add('active');
+            rankMonthlyBtn?.classList.remove('active');
+            renderLeaderboard();
+        });
+    }
+    if (rankMonthlyBtn) {
+        rankMonthlyBtn.addEventListener('click', () => {
+            rankMode = 'monthly';
+            rankMonthlyBtn.classList.add('active');
+            rankWeeklyBtn?.classList.remove('active');
+            renderLeaderboard();
+        });
+    }
+
     function getStatusBadge(status) {
         switch (status) {
             case 'pending':
@@ -1557,7 +1656,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function saveTasksLocal() {
         localStorage.setItem('chrono_tasks', JSON.stringify(tasks));
+        localStorage.setItem('chrono_tasks_' + userName, JSON.stringify(tasks));
         localStorage.setItem('chrono_score', disciplineScore);
+        localStorage.setItem('chrono_score_' + userName, disciplineScore);
     }
 
     // --- Pomodoro Logic ---

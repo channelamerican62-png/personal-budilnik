@@ -1148,3 +1148,50 @@ body[data-theme="dark"] .leaflet-tile-pane {
     pointer-events: auto;
 }
 
+/* === Leaderboard & Chart Grid === */
+.chart-leaderboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 900px) {
+    .chart-leaderboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.leaderboard-row-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
+}
+
+body[data-theme="dark"] .leaderboard-row-item {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.leaderboard-row-item.is-user {
+    background: var(--primary-glow);
+    border: 1px solid var(--primary);
+    font-weight: 700;
+}
+
+.leaderboard-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.leaderboard-rank-num {
+    font-weight: 800;
+    font-size: 0.95rem;
+    min-width: 24px;
+}
+
+
