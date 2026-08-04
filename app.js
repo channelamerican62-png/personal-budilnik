@@ -184,8 +184,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
-    // --- Init Account API Sync ---
-    await initServerAccount();
+    // --- Safe Local Storage Load ---
+    try {
+        tasks = JSON.parse(localStorage.getItem('chrono_tasks')) || [];
+    } catch(e) {
+        tasks = [];
+    }
+    
+    initFormMap();
+    updateUserNameUI();
+    updateStatsUI();
+    renderTasks();
+    renderFocusCard();
+
+    // Start 1-second interval ticker IMMEDIATELY
+    setInterval(tick, 1000);
+    setInterval(fetchTasksFromAPI, 4000);
+    tick();
+
+    // --- Init Account API Sync (Non-blocking) ---
+    initServerAccount();
 
     // --- Geolocation Init ---
     if ("geolocation" in navigator) {
@@ -197,17 +215,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             () => console.log("User GPS fallback")
         );
     }
-
-    initFormMap();
-    updateUserNameUI();
-    updateStatsUI();
-    renderTasks();
-    renderFocusCard();
-
-    // Start 1-second interval ticker & 5-second API polling ticker
-    setInterval(tick, 1000);
-    setInterval(fetchTasksFromAPI, 4000);
-    tick();
 
     // --- API Sync Functions ---
     async function initServerAccount() {
@@ -233,7 +240,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (e) {
             console.log("Server API Offline, using Local Storage mode");
-            tasks = JSON.parse(localStorage.getItem('chrono_tasks')) || [];
+            try {
+                tasks = JSON.parse(localStorage.getItem('chrono_tasks')) || [];
+            } catch(err) {
+                tasks = [];
+            }
             disciplineScore = parseInt(localStorage.getItem('chrono_score')) || 100;
         }
     }
