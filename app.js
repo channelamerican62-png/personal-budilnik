@@ -281,6 +281,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- State Management ---
+    let calViewYear = new Date().getFullYear();
+    let calViewMonth = new Date().getMonth();
+    let calSelectedDate = null;
+    const UZ_MONTHS = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktyabr','Noyabr','Dekabr'];
+
     let userId = localStorage.getItem('chrono_userid') || ('user_' + Date.now());
     let userName = localStorage.getItem('chrono_username') || 'Ali';
     let syncCode = localStorage.getItem('chrono_synccode') || '';
@@ -464,12 +469,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Mini Calendar Logic ---
-    let calViewYear = new Date().getFullYear();
-    let calViewMonth = new Date().getMonth();
-    let calSelectedDate = null;
-
-    const UZ_MONTHS = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktyabr','Noyabr','Dekabr'];
-
     function getTaskDotColors(dateStr) {
         // BUG #2 FIX: Use local date string (not UTC) for comparison
         // dateStr format: 'YYYY-MM-DD' in local timezone
