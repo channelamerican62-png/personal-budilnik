@@ -6,6 +6,7 @@ const indexHtml = fs.readFileSync('index.html', 'utf8');
 const appJs = fs.readFileSync('app.js', 'utf8');
 
 const dom = new JSDOM(indexHtml, {
+  url: "http://localhost/", // This fixes the localStorage SecurityError!
   runScripts: "dangerously",
   resources: "usable"
 });
@@ -19,8 +20,14 @@ process.on('unhandledRejection', (reason) => {
 
 // Polyfill window functions
 dom.window.fetch = async () => ({ json: async () => ({ success: true, account: {} }) });
-dom.window.localStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 dom.window.navigator.geolocation = { getCurrentPosition: (cb) => cb({coords: {latitude: 41, longitude: 69}}) };
+
+// Polyfill ResizeObserver
+dom.window.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+};
 
 dom.window.L = {
   map: () => ({ setView: () => ({ removeLayer: () => {}, fitBounds: () => {}, invalidateSize: () => {} }) }),
@@ -30,7 +37,7 @@ dom.window.L = {
   polyline: () => ({ addTo: () => {} }),
   latLngBounds: () => ({})
 };
-dom.window.Chart = class { constructor() { this.data = { datasets: [{ data: [] }] }; } update() {} };
+// Use real Chart.js via JSDOM resources but it uses ResizeObserver so we polyfilled it
 
 try {
   dom.window.eval(appJs);

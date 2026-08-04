@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let syncCode = localStorage.getItem('chrono_synccode') || '';
     let tasks = [];
     let disciplineScore = parseInt(localStorage.getItem('chrono_score')) || 100;
-
+    let disciplineChartInstance = null;
 
     let currentFilter = 'all';
     let activeWarningTaskId = null;
@@ -948,7 +948,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateDisciplineChart();
     }
 
-    let disciplineChartInstance = null;
     function updateDisciplineChart() {
         const ctx = document.getElementById('disciplineChart');
         if (!ctx) return;
