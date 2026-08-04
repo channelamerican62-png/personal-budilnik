@@ -1374,45 +1374,162 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function updateDisciplineChart() {
         try {
-            const ctx = document.getElementById('disciplineChart');
-            if (!ctx || typeof Chart === 'undefined') return;
-            
+            const canvas = document.getElementById('disciplineChart');
+            if (!canvas) return;
+
             const labels = ['Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan', 'Bugun'];
             const data = [100, 95, 90, 85, 92, 98, disciplineScore];
-            
-            if (disciplineChartInstance) {
-                disciplineChartInstance.data.datasets[0].data[6] = disciplineScore;
-                disciplineChartInstance.update();
-            } else {
-                disciplineChartInstance = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Intizom Darajasi (%)',
-                            data: data,
-                            borderColor: '#678B6D',
-                            backgroundColor: 'rgba(103, 139, 109, 0.2)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: { min: 0, max: 100 }
+
+            // If Chart.js library loaded, use Chart.js
+            if (typeof Chart !== 'undefined') {
+                if (disciplineChartInstance) {
+                    disciplineChartInstance.data.datasets[0].data[6] = disciplineScore;
+                    disciplineChartInstance.update();
+                } else {
+                    disciplineChartInstance = new Chart(canvas, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Intizom Darajasi (%)',
+                                data: data,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            }]
                         },
-                        plugins: {
-                            legend: { display: false }
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { min: 0, max: 100 }
+                            },
+                            plugins: {
+                                legend: { display: false }
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                return;
             }
+
+            // Fallback: Pure HTML5 Canvas renderer (Zero CDN dependency!)
+            renderPureCanvasChart(canvas, data, labels);
+
         } catch (e) {
             console.log("Discipline chart update error:", e);
         }
+    }
+
+    function renderPureCanvasChart(canvas, data, labels) {
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const parent = canvas.parentElement;
+        const width = parent.clientWidth || 800;
+        const height = 180;
+        
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, width, height);
+
+        const padding = { top: 25, right: 25, bottom: 30, left: 45 };
+        const chartW = width - padding.left - padding.right;
+        const chartH = height - padding.top - padding.bottom;
+
+        // Grid lines
+        const gridSteps = [0, 25, 50, 75, 100];
+        ctx.font = '500 11px Outfit, sans-serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'right';
+
+        gridSteps.forEach(step => {
+            const y = padding.top + chartH - (step / 100) * chartH;
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.15)';
+            ctx.lineWidth = 1;
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(width - padding.right, y);
+            ctx.stroke();
+            ctx.fillText(`${step}%`, padding.left - 8, y + 4);
+        });
+
+        // X-axis & Data points
+        const stepX = chartW / (labels.length - 1);
+        const points = data.map((val, i) => ({
+            x: padding.left + i * stepX,
+            y: padding.top + chartH - (val / 100) * chartH,
+            val: val,
+            label: labels[i]
+        }));
+
+        // Draw X labels
+        ctx.textAlign = 'center';
+        points.forEach(p => {
+            ctx.fillText(p.label, p.x, height - 8);
+        });
+
+        // Gradient Fill
+        const grad = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
+        grad.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+        grad.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, padding.top + chartH);
+        points.forEach((p, i) => {
+            if (i === 0) ctx.lineTo(p.x, p.y);
+            else {
+                const prev = points[i - 1];
+                const cpX1 = prev.x + stepX / 2;
+                const cpY1 = prev.y;
+                const cpX2 = p.x - stepX / 2;
+                const cpY2 = p.y;
+                ctx.bezierCurveTo(cpX1, cpY1, cpX2, cpY2, p.x, p.y);
+            }
+        });
+        ctx.lineTo(points[points.length - 1].x, padding.top + chartH);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Stroke Line
+        ctx.beginPath();
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 3;
+        points.forEach((p, i) => {
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else {
+                const prev = points[i - 1];
+                const cpX1 = prev.x + stepX / 2;
+                const cpY1 = prev.y;
+                const cpX2 = p.x - stepX / 2;
+                const cpY2 = p.y;
+                ctx.bezierCurveTo(cpX1, cpY1, cpX2, cpY2, p.x, p.y);
+            }
+        });
+        ctx.stroke();
+
+        // Dots & Values
+        points.forEach((p, i) => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = i === points.length - 1 ? '#059669' : '#10b981';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#475569';
+            ctx.font = '600 11px Outfit, sans-serif';
+            ctx.fillText(`${p.val}%`, p.x, p.y - 9);
+        });
     }
 
     function getStatusBadge(status) {
