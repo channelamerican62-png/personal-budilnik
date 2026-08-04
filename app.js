@@ -23,9 +23,64 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const mockSignInBtn = document.getElementById('mockSignInBtn');
-    const mockGoogleBtn = document.getElementById('mockGoogleBtn');
     if(mockSignInBtn) mockSignInBtn.addEventListener('click', handleLogin);
-    if(mockGoogleBtn) mockGoogleBtn.addEventListener('click', handleLogin);
+
+    // --- GOOGLE IDENTITY SERVICES ---
+    window.handleCredentialResponse = function(response) {
+        const responsePayload = decodeJwtResponse(response.credential);
+        const googleId = responsePayload.sub;
+        const name = responsePayload.name;
+        
+        localStorage.setItem('chrono_userid', googleId);
+        localStorage.setItem('chrono_username', name);
+        
+        userId = googleId;
+        userName = name;
+        
+        handleLogin();
+        
+        initServerAccount().then(() => {
+            updateUserNameUI();
+            updateStatsUI();
+            renderTasks();
+            renderFocusCard();
+            if (typeof showToast === 'function') {
+                showToast(`Xush kelibsiz, ${name}!`, 'success');
+            }
+        });
+    };
+
+    function decodeJwtResponse(token) {
+        let base64Url = token.split('.')[1];
+        let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    }
+
+    function initGoogleAuth() {
+        if(typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            google.accounts.id.initialize({
+                client_id: "1047469391776-fa96ul1eo5t3cc3i6csk71enmuh6lojv.apps.googleusercontent.com",
+                callback: window.handleCredentialResponse
+            });
+            const btnContainer = document.getElementById("googleBtnContainer");
+            if (btnContainer) {
+                google.accounts.id.renderButton(
+                    btnContainer,
+                    { theme: "outline", size: "large", width: 280, text: "signin_with" }
+                );
+            }
+        }
+    }
+
+    // Try init immediately or wait for script load
+    if (typeof google !== 'undefined') {
+        initGoogleAuth();
+    } else {
+        setTimeout(initGoogleAuth, 1000);
+    }
 
     // --- State Management ---
     let userId = localStorage.getItem('chrono_userid') || ('user_' + Date.now());
