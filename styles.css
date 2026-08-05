@@ -1194,4 +1194,16 @@ body[data-theme="dark"] .leaderboard-row-item {
     min-width: 24px;
 }
 
+/* === Form Live Map Preview Container === */
+#formLiveMap {
+    height: 180px !important;
+    width: 100% !important;
+    border-radius: 12px;
+    margin-top: 10px;
+    z-index: 1;
+    overflow: hidden;
+    background: #e2e8f0;
+}
+
+
 
