@@ -851,9 +851,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!formMap || !query) return;
 
         try {
+            // Force Leaflet map container to recalculate layout size!
+            setTimeout(() => { try { formMap.invalidateSize(); } catch(e){} }, 100);
+
             const dest = await geocodeLocation(query);
             const destCoords = [dest.lat, dest.lng];
 
+            if (formUserMarker && typeof formMap.removeLayer === 'function') {
+                try { formMap.removeLayer(formUserMarker); } catch(e){}
+            }
             if (formDestMarker && typeof formMap.removeLayer === 'function') {
                 try { formMap.removeLayer(formDestMarker); } catch(e){}
             }
@@ -862,13 +868,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (typeof L !== 'undefined' && L.marker) {
+                const userIcon = L.divIcon({
+                    className: 'custom-map-pin-user',
+                    html: `<div style="background:#10b981; width:18px; height:18px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 15px #10b981;"></div>`
+                });
+
                 const destIcon = L.divIcon({
                     className: 'custom-map-pin-dest',
-                    html: `<div style="background:#ef4444; width:20px; height:20px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 20px #ef4444; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px;"><i class="fa-solid fa-flag-checkered"></i></div>`
+                    html: `<div style="background:#ef4444; width:22px; height:22px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 20px #ef4444; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px;"><i class="fa-solid fa-flag-checkered"></i></div>`
                 });
 
                 if (typeof formMap.addLayer === 'function') {
-                    formDestMarker = L.marker(destCoords, { icon: destIcon }).addTo(formMap).bindPopup(`<b>${dest.name}</b>`);
+                    formUserMarker = L.marker(userCoords, { icon: userIcon }).addTo(formMap).bindPopup("<b>Sizning GPS Joylashuvingiz</b>");
+                    formDestMarker = L.marker(destCoords, { icon: destIcon }).addTo(formMap).bindPopup(`<b>Manzil: ${dest.name}</b>`);
 
                     formRouteLine = L.polyline([userCoords, destCoords], {
                         color: '#10b981',
@@ -879,14 +891,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (formMap.fitBounds && L.latLngBounds) {
                         const bounds = L.latLngBounds([userCoords, destCoords]);
-                        formMap.fitBounds(bounds, { padding: [30, 30] });
+                        formMap.fitBounds(bounds, { padding: [35, 35] });
                     }
                 }
             }
 
             const distKm = calculateDistance(userCoords[0], userCoords[1], dest.lat, dest.lng).toFixed(1);
-            
-            // Traffic Simulation (+ 5 to 15 mins)
             const trafficFactor = Math.floor(Math.random() * 11) + 5; 
             const baseMins = Math.ceil(distKm * 2.5);
             const travelMins = baseMins + trafficFactor;
