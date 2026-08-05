@@ -850,50 +850,66 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function updateFormMapRoute(query) {
         if (!formMap || !query) return;
 
-        const dest = await geocodeLocation(query);
-        const destCoords = [dest.lat, dest.lng];
-
-        if (formDestMarker) formMap.removeLayer(formDestMarker);
-        if (formRouteLine) formMap.removeLayer(formRouteLine);
-
-        const destIcon = L.divIcon({
-            className: 'custom-map-pin-dest',
-            html: `<div style="background:#ef4444; width:20px; height:20px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 20px #ef4444; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px;"><i class="fa-solid fa-flag-checkered"></i></div>`
-        });
-
-        formDestMarker = L.marker(destCoords, { icon: destIcon }).addTo(formMap).bindPopup(`<b>${dest.name}</b>`);
-
-        formRouteLine = L.polyline([userCoords, destCoords], {
-            color: '#10b981',
-            weight: 4,
-            dashArray: '8, 8',
-            opacity: 0.85
-        }).addTo(formMap);
-
-        const bounds = L.latLngBounds([userCoords, destCoords]);
-        formMap.fitBounds(bounds, { padding: [30, 30] });
-
-        const distKm = calculateDistance(userCoords[0], userCoords[1], dest.lat, dest.lng).toFixed(1);
-        
-        // Traffic Simulation (+ 5 to 15 mins)
-        const trafficFactor = Math.floor(Math.random() * 11) + 5; 
-        const baseMins = Math.ceil(distKm * 2.5);
-        const travelMins = baseMins + trafficFactor;
-
-        // Fetch Weather
-        let weatherStr = "";
         try {
-            const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${dest.lat}&longitude=${dest.lng}&current_weather=true`);
-            const wData = await wResp.json();
-            if (wData && wData.current_weather) {
-                weatherStr = ` | 🌡️ ${wData.current_weather.temperature}°C`;
-            }
-        } catch(e){}
+            const dest = await geocodeLocation(query);
+            const destCoords = [dest.lat, dest.lng];
 
-        routeInfoText.innerHTML = `
-            <span><i class="fa-solid fa-location-crosshairs" style="color:var(--primary);"></i> Siz ➔ <strong style="color:var(--text-main);">${dest.name}</strong></span>
-            <span style="color:var(--primary); font-weight:700;">${distKm} km (~${travelMins} min, tirbandlik bilan) ${weatherStr}</span>
-        `;
+            if (formDestMarker && typeof formMap.removeLayer === 'function') {
+                try { formMap.removeLayer(formDestMarker); } catch(e){}
+            }
+            if (formRouteLine && typeof formMap.removeLayer === 'function') {
+                try { formMap.removeLayer(formRouteLine); } catch(e){}
+            }
+
+            if (typeof L !== 'undefined' && L.marker) {
+                const destIcon = L.divIcon({
+                    className: 'custom-map-pin-dest',
+                    html: `<div style="background:#ef4444; width:20px; height:20px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 20px #ef4444; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px;"><i class="fa-solid fa-flag-checkered"></i></div>`
+                });
+
+                if (typeof formMap.addLayer === 'function') {
+                    formDestMarker = L.marker(destCoords, { icon: destIcon }).addTo(formMap).bindPopup(`<b>${dest.name}</b>`);
+
+                    formRouteLine = L.polyline([userCoords, destCoords], {
+                        color: '#10b981',
+                        weight: 4,
+                        dashArray: '8, 8',
+                        opacity: 0.85
+                    }).addTo(formMap);
+
+                    if (formMap.fitBounds && L.latLngBounds) {
+                        const bounds = L.latLngBounds([userCoords, destCoords]);
+                        formMap.fitBounds(bounds, { padding: [30, 30] });
+                    }
+                }
+            }
+
+            const distKm = calculateDistance(userCoords[0], userCoords[1], dest.lat, dest.lng).toFixed(1);
+            
+            // Traffic Simulation (+ 5 to 15 mins)
+            const trafficFactor = Math.floor(Math.random() * 11) + 5; 
+            const baseMins = Math.ceil(distKm * 2.5);
+            const travelMins = baseMins + trafficFactor;
+
+            // Fetch Weather
+            let weatherStr = "";
+            try {
+                const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${dest.lat}&longitude=${dest.lng}&current_weather=true`);
+                const wData = await wResp.json();
+                if (wData && wData.current_weather) {
+                    weatherStr = ` | 🌡️ ${wData.current_weather.temperature}°C`;
+                }
+            } catch(e){}
+
+            if (routeInfoText) {
+                routeInfoText.innerHTML = `
+                    <span><i class="fa-solid fa-location-crosshairs" style="color:var(--primary);"></i> Siz ➔ <strong style="color:var(--text-main);">${dest.name}</strong></span>
+                    <span style="color:var(--primary); font-weight:700;">${distKm} km (~${travelMins} min, tirbandlik bilan)${weatherStr}</span>
+                `;
+            }
+        } catch(err) {
+            console.log("Form map route update error:", err);
+        }
     }
 
     function openRouteModal(task) {
@@ -1204,14 +1220,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderTasks() {
+        if (!tasksListEl) return;
         tasksListEl.innerHTML = '';
 
-        let filteredTasks = tasks;
-        if (currentFilter === 'pending') filteredTasks = tasks.filter(t => t.status === 'pending' || t.status === 'on_the_way');
-        if (currentFilter === 'late') filteredTasks = tasks.filter(t => t.status === 'late');
-        if (currentFilter === 'completed') filteredTasks = tasks.filter(t => t.status === 'completed');
+        if (!Array.isArray(tasks)) tasks = [];
 
-        if (filteredTasks.length === 0) {
+        let filteredTasks = tasks;
+        if (currentFilter === 'pending') filteredTasks = tasks.filter(t => t && (t.status === 'pending' || t.status === 'on_the_way'));
+        if (currentFilter === 'late') filteredTasks = tasks.filter(t => t && t.status === 'late');
+        if (currentFilter === 'completed') filteredTasks = tasks.filter(t => t && t.status === 'completed');
+
+        if (!Array.isArray(filteredTasks) || filteredTasks.length === 0) {
             tasksListEl.innerHTML = `
                 <div style="text-align:center; padding: 30px; color: var(--text-muted);">
                     <i class="fa-solid fa-folder-open" style="font-size:2rem; margin-bottom:10px;"></i>
@@ -1339,6 +1358,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function geocodeLocation(query) {
         if (!query) return { name: "Toshkent", lat: 41.2995, lng: 69.2401 };
 
+        const knownLocations = {
+            'golds gym': { name: "Gold's Gym Fitness", lat: 41.3111, lng: 69.2797 },
+            'toshkent': { name: "Toshkent", lat: 41.2995, lng: 69.2401 },
+            'chilonzor': { name: "Chilonzor", lat: 41.2778, lng: 69.2023 },
+            'yunusobod': { name: "Yunusobod", lat: 41.3644, lng: 69.2882 }
+        };
+
         const cleanQ = query.toLowerCase().trim();
         for (const key in knownLocations) {
             if (cleanQ.includes(key)) {
@@ -1349,7 +1375,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ", Tashkent")}`);
             const data = await resp.json();
-            if (data && data.length > 0) {
+            if (Array.isArray(data) && data.length > 0) {
                 return {
                     name: data[0].display_name.split(',')[0],
                     lat: parseFloat(data[0].lat),
