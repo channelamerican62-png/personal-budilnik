@@ -829,6 +829,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    function openCurrentGoogleMapsRoute(targetQuery) {
+        const destQuery = targetQuery || taskLocationInput.value.trim() || "Gold's Gym Fitness, Toshkent";
+        const originStr = `${userCoords[0]},${userCoords[1]}`;
+        const gmapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${originStr}&destination=${encodeURIComponent(destQuery)}`;
+        window.open(gmapsUrl, '_blank');
+        showToast(`🗺️ Google Maps'da "${destQuery}" marshruti ochilmoqda...`, "info");
+    }
+
     // --- Form Map Logic (Leaflet) ---
     function initFormMap() {
         if (typeof L === 'undefined') return;
@@ -837,6 +845,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19
         }).addTo(formMap);
+
+        // Click ONCE on map to open Google Maps route directly!
+        formMap.on('click', () => {
+            openCurrentGoogleMapsRoute();
+        });
+
+        const formMapContainer = document.getElementById('formMapContainer');
+        if (formMapContainer) {
+            formMapContainer.addEventListener('click', (e) => {
+                if (e.target.closest('#presetLocBtn')) return;
+                openCurrentGoogleMapsRoute();
+            });
+        }
 
         const greenIcon = L.divIcon({
             className: 'custom-map-pin-user',

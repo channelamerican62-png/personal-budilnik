@@ -19,8 +19,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/hourglass-half.svg">
-    <link rel="stylesheet" href="styles.css?v=800">
-    <link rel="stylesheet" href="login.css?v=800">
+    <link rel="stylesheet" href="styles.css?v=900">
+    <link rel="stylesheet" href="login.css?v=900">
 </head>
 <body data-theme="afternoon">
 
@@ -272,11 +272,14 @@
                         </div>
                     </div>
 
-                    <div class="form-map-container glass-panel-inner" id="formMapContainer">
+                    <div class="form-map-container glass-panel-inner" id="formMapContainer" style="position:relative; cursor:pointer;" title="Google Maps Navigatsiyasini Ochish Uchun Bosing!">
                         <div class="map-status-bar">
                             <span id="routeInfoText"><i class="fa-solid fa-route" style="color:var(--primary);"></i> Manzilni kiriting...</span>
                         </div>
-                        <div id="formLiveMap" class="form-live-map"></div>
+                        <div id="formLiveMap" class="form-live-map" style="position:relative;"></div>
+                        <div class="gmaps-overlay-hint" id="gmapsOverlayHint" style="position:absolute; bottom:10px; right:10px; z-index:1000; background:linear-gradient(135deg, #10b981, #059669); color:#fff; padding:6px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; display:flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(0,0,0,0.25); backdrop-filter:blur(4px); pointer-events:none;">
+                            <i class="fa-solid fa-location-arrow"></i> Google Maps Navigatsiya ➔
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -529,6 +532,6 @@
 
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="app.js?v=800"></script>
+    <script src="app.js?v=900"></script>
 </body>
 </html>
